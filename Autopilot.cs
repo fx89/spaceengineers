@@ -193,7 +193,7 @@ private class FlightAssistant {
 		}
 
 		// Tick all the features, while providing the feature argument to the feature
-		// having the gven featureName (if any)
+		// having the given featureName (if any)
 		features.ForEach(wrappedFeature => {
 			if (shouldRunFeature(wrappedFeature)) {
 				string arg = wrappedFeature.nameUCase.Equals(featureName) ? featureArgument : null;
@@ -375,6 +375,15 @@ private class ThrustControl {
 	}
 
 	/**
+	 *  Runs all thrusters in the given direction at 100%
+	 */
+	public void fullThrust(Direction direction) {
+		registry.thrusters[direction].ForEach(thruster => {
+			thruster.ThrustOverridePercentage = 1;
+		});
+	}
+
+	/**
 	 *  Loops through all blocks of type IMyThrust and puts them in a dictionary that
 	 *  groups them by the direction in which they move the ship
 	 */
@@ -387,35 +396,43 @@ private class ThrustControl {
 		groupedThrusters.Add(Direction.RIGHT   , new List<IMyThrust>());
 		groupedThrusters.Add(Direction.UP      , new List<IMyThrust>());
 		groupedThrusters.Add(Direction.DOWN    , new List<IMyThrust>());
-		
+
 		// Get the thrusters from the grid
 		List<IMyThrust> thrusters = new List<IMyThrust>();
 		registry.gridTerminalSystem.GetBlocksOfType<IMyThrust>(thrusters);
+
+		// Get the controller's transformation matrix in relation to the grid
+		Matrix controllerOrientationMatrix;
+		registry.controller.Orientation.GetMatrix(out controllerOrientationMatrix);
+		
+		// Invert the controller's transformation matrix so it can be used in
+		// transforming the thruster's orientation vectors to the controller's
+		// coordinate system
+		Matrix inverseControllerOrientationMatrix
+			= Matrix.Invert(controllerOrientationMatrix);
 
 		// Group the thrusters into the dictionary categories
 		// NOTE: the direction in which the thruster moves the ship is opposite from
 		//       the direction in which the thruster fires in order to move the ship
 		thrusters.ForEach(thruster => {
+			// Align the thruster's orientation vector to the controller's coordinate
+			// system
+			Vector3D alignedThrustVector
+			= Vector3D.Transform(
+					directionToVector3D(thruster.Orientation.Forward),
+					inverseControllerOrientationMatrix
+				);
+
+			// Match the thruster to the appropriate direction
 			foreach (Direction direction in groupedThrusters.Keys) {
-				matchThrusterToDirectionGroup(thruster,direction, groupedThrusters);
+				if (areVectorsOpposite(alignedThrustVector, directionToVector3D(direction))) {
+					groupedThrusters[direction].Add(thruster);
+				}
 			}
 		});
 
 		// Finally, return the populated dictionary
 		return groupedThrusters;
-	}
-
-	/**
-	 * Helper for identifyThrusters() - see above
-	 */
-	private static void matchThrusterToDirectionGroup(
-		IMyThrust thruster,
-		Direction direction,
-		Dictionary<Direction, List<IMyThrust>> groupedThrusters
-	) {
-		if (areVectorsOpposite(thruster.GridThrustDirection, directionToVector3D(direction))) {
-			groupedThrusters[direction].Add(thruster);
-		}
 	}
 }
 
@@ -451,7 +468,7 @@ private class GyroControl {
 
 	/**
 	 *  Calls the startRotation(Vector3D) method for a vector created
-	 * from the given parmeters
+	 * from the given parameters
 	 */
 	public void startRotation(double yaw, double pitch, double roll) {
 		startRotation(new Vector3D(yaw, pitch, roll));
@@ -1026,11 +1043,11 @@ private class AutoLevel : IFlightAssistantFeature {
 				Vector3D normalizedShipAxisVector = sensors.getControllerWorldOrientationVectors().Up;
 				Vector3D normalizedGravityVector  = sensors.getGravityUpVector();
 				
-				log.info("Normalized Forward = " + normalizedShipAxisVector.ToString());
-				log.info("==============");
-				log.info("Normalized Gravity = " + normalizedGravityVector.ToString());
-				log.info("==============");
-				log.info("ANGLE = " + getAngleBetweenVectors(normalizedShipAxisVector, normalizedGravityVector));
+				//log.info("Normalized Forward = " + normalizedShipAxisVector.ToString());
+				//log.info("==============");
+				//log.info("Normalized Gravity = " + normalizedGravityVector.ToString());
+				//log.info("==============");
+				//log.info("ANGLE = " + getAngleBetweenVectors(normalizedShipAxisVector, normalizedGravityVector));
 
 				if (isStabilizing) {
 					if (isStable(normalizedShipAxisVector, normalizedGravityVector)) {

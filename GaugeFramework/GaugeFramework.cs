@@ -2,9 +2,11 @@
 // HELPERS FOR CONFIG //////////////////////////////////////////////////////////////////////////////////////////////
 
 private enum GaugeDisplayMode {
-    JMP_DRV_AVG_CHRG_TEXT,      // display the average charge in the form of "Jump Drives: 100.00%"
-    JMP_DRV_AVG_CHRG_PRGBAR,    // display the average charge the form of "JMP DRV: ||||||||||||||||||||||||"
-    JMP_DRV_STATUS_TEXT         // display the overall status of the jump drives as either ONLINE or OFFLINE
+    JMP_DRV_VALUE_TEXT,      // display the average charge in the form of "Jump Drives: 100.00%"
+    JMP_DRV_VALUE_PRGBAR,    // display the average charge in the form of "JMP DRV: ||||||||||||||||||||||||"
+    JMP_DRV_STATUS_TEXT,     // display the overall status of the jump drives as either ONLINE or OFFLINE
+    SPD_VALUE_TEXT,          // display the current speed of the grid in m/s - works only when the grid has at least a cockpit or a control block
+    SPD_VALUE_PRGBAR         // displays the current speed in the form of "SPEED: ||||||||||||||||||||||||" - works only when the grid has at least a cockpit or a control block
 }
 
 const int TEXT_IS_NOT_MULTILINE = -1;    // use this constant in textDisplayPanelModes configuration
@@ -19,6 +21,9 @@ const int JMP_DRV_ONLINE  =  1;
 
 
 // CONFIG //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Configure environment parameters
+const double MAX_SPEED_MPS = 100; // This might have to be changed if working with mods that remove the speed limit
 
 // Set this option to true to have the script change the text color of single line panels
 // Set this option to false to keep the assigned color of single line panels
@@ -40,28 +45,28 @@ List<TargetTextPanelConfig> config = new ConfigBuilder()
 
     .forTextPanel("DISPLAY - LOWER COCKPIT STATUS 1")                                       // Configure text panel named DISPLAY - LOWER COCKPIT STATUS 1
         .atLine(2).addGauge(GaugeDisplayMode.JMP_DRV_STATUS_TEXT)                           // Put the overall status of all jump drives in the 3rd line
-        .atLine(3).addGauge(GaugeDisplayMode.JMP_DRV_AVG_CHRG_TEXT)                         // Write the average charge in percentage on the 4th line
-        .atLine(4).addGauge(GaugeDisplayMode.JMP_DRV_AVG_CHRG_PRGBAR)                       // Put the average charge progress bar on the 5th line
+        .atLine(3).addGauge(GaugeDisplayMode.JMP_DRV_VALUE_TEXT)                         // Write the average charge in percentage on the 4th line
+        .atLine(4).addGauge(GaugeDisplayMode.JMP_DRV_VALUE_PRGBAR)                       // Put the average charge progress bar on the 5th line
 
     .forTextPanel("DISPLAY - JUMP DRIVE STATION STATUS")                                    // Configure text panel named DISPLAY - JUMP DRIVE STATION STATUS
         .atLine(TEXT_IS_NOT_MULTILINE).addGauge(GaugeDisplayMode.JMP_DRV_STATUS_TEXT)       // Replace the text of the panel with the overall status of the jump drives
 
     .forTextPanel("DISPLAY - JMP DRV CHARGE")                                                               // - Configure text panel named DISPLAY - JMP DRV CHARGE
         .atLine(TEXT_IS_NOT_MULTILINE)                                                                      //     - Replace the text of the panel
-            .addGauge(GaugeDisplayMode.JMP_DRV_AVG_CHRG_PRGBAR)                                             //     - Put the progress bar
+            .addGauge(GaugeDisplayMode.JMP_DRV_VALUE_PRGBAR)                                             //     - Put the progress bar
                 .withCondition(gauges => gauges[GaugeDisplayMode.JMP_DRV_STATUS_TEXT] == JMP_DRV_ONLINE)    //         - But only if the jump drives are online
             .addGauge(GaugeDisplayMode.JMP_DRV_STATUS_TEXT)                                                 //     - Or put the jump drive status
                 .withCondition(gauges => gauges[GaugeDisplayMode.JMP_DRV_STATUS_TEXT] != JMP_DRV_ONLINE)    //         - But only if the jump drives are not online
-                .withAdditionaAction(appCtx => appCtx.forceRefresh[GaugeDisplayMode.JMP_DRV_AVG_CHRG_PRGBAR] = true) //    - Once the OFFLINE status is applied,
+                .withAdditionaAction(appCtx => appCtx.forceRefresh[GaugeDisplayMode.JMP_DRV_VALUE_PRGBAR] = true) //    - Once the OFFLINE status is applied,
                                                                                                             //               force the refresh of the progressbar 
                                                                                                             //               when the jump drives come online
     .forTextPanel("DISPLAY - JMP DRV PCT CHARGE")                                           // Do the same thing as above for the average dump drive charge percentage display
         .atLine(TEXT_IS_NOT_MULTILINE)
-            .addGauge(GaugeDisplayMode.JMP_DRV_AVG_CHRG_TEXT)
+            .addGauge(GaugeDisplayMode.JMP_DRV_VALUE_TEXT)
                 .withCondition(gauges => gauges[GaugeDisplayMode.JMP_DRV_STATUS_TEXT] == JMP_DRV_ONLINE)
             .addGauge(GaugeDisplayMode.JMP_DRV_STATUS_TEXT)
                 .withCondition(gauges => gauges[GaugeDisplayMode.JMP_DRV_STATUS_TEXT] != JMP_DRV_ONLINE)
-                .withAdditionaAction(appCtx => appCtx.forceRefresh[GaugeDisplayMode.JMP_DRV_AVG_CHRG_TEXT] = true)
+                .withAdditionaAction(appCtx => appCtx.forceRefresh[GaugeDisplayMode.JMP_DRV_VALUE_TEXT] = true)
 
 .build();
 
@@ -305,6 +310,15 @@ private static void execForAllBlocksOfTypeWithName<T> (
 // MINI FRAMEWORK //////////////////////////////////////////////////////////////////////////////////////////////////
 
 private interface IGaugeDataHandler {
+	/**
+	 *  Called only once, upon initialization. This is where intensive operations
+	 *  such as extracting object references from the grid may be done.
+	 */
+	void init(IMyGridTerminalSystem GridTerminalSystem);
+
+	/**
+	 *  Called upon each tick. Extracts the gauge value.
+	 */
     double computeValue(IMyGridTerminalSystem GridTerminalSystem);
 }
 
@@ -378,6 +392,10 @@ private class StatefulGaugeManager {
         }
     }
 
+	public void init() {
+		dataHandler.init(GridTerminalSystem);
+	}
+
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
 
@@ -406,7 +424,7 @@ private class StatefulGaugeManager {
                     GaugeDisplayMode displayMode,
                     Func<Dictionary<GaugeDisplayMode,double>,bool> condition,
                     Action<ApplicationContext> additionalAction
-) {
+	) {
      // If a condition function was given and it evaluates to false, then the current iteration must be skipped
         if (condition != null && condition(applicationContext.gaugeValues) == false) {
             return;
@@ -567,10 +585,13 @@ private class JumpDriveChargeDataHandler : IGaugeDataHandler {
      // When ignoring fully charged drives and all drives are charged, one must return 100%
         if (ignoreFullyCharged && totalCharge == 0) return 1;
 
-     // In all other cases, compute and return the averagte charge
+     // In all other cases, compute and return the average charge
         double avgCharge = totalCharge / maxPower;
         return avgCharge > 1 ? 1 : avgCharge; // CAP at 1 just to make sure it doesn't overflow on the LCD text panel
     }
+
+	public void init(IMyGridTerminalSystem GridTerminalSystem) {
+	}
 
     public double computeValue(IMyGridTerminalSystem GridTerminalSystem) {
         return getAverageJumpDriveCharge(GridTerminalSystem);
@@ -580,13 +601,16 @@ private class JumpDriveChargeDataHandler : IGaugeDataHandler {
 
 
 /**
- * Computes the status of the jumpdrives in the grid.
+ * Computes the status of the jump drives in the grid.
  * Possible values:
  *                    0 = OFFLINE
  *                    1 = ONLINE
  *        MISSING_VALUE = Unable to find jump drives OR some of the drives are online, while others are offline
  */
 private class JumpDriveStatusDataHandler : IGaugeDataHandler {
+
+	public void init(IMyGridTerminalSystem GridTerminalSystem) {
+	}
 
     public double computeValue(IMyGridTerminalSystem GridTerminalSystem) {
      // Initialize the overall state
@@ -621,6 +645,35 @@ private class JumpDriveStatusDataHandler : IGaugeDataHandler {
         return (statesMatch && status != NOT_FOUND) ? initialState : MISSING_VALUE;
     }
 }
+
+
+
+
+/**
+ * Extracts the current speed of the ship in meters per second
+ */
+private class SpeedometerDataHandler : IGaugeDataHandler {
+	private IMyShipController controller = null;
+
+	public void init(IMyGridTerminalSystem GridTerminalSystem) {
+		// Get the list of control stations
+		List<IMyShipController> gridControllers = new List<IMyShipController>();
+		GridTerminalSystem.GetBlocksOfType<IMyShipController>(gridControllers);
+
+		// Raise exception if there is no control station in the grid
+		if (gridControllers == null || gridControllers.Count <= 0) {
+			return;
+		}
+
+		//Get the first one
+		controller = gridControllers.First();
+	}
+
+    public double computeValue(IMyGridTerminalSystem GridTerminalSystem) {
+		return (controller == null) ? MISSING_VALUE : controller.GetShipSpeed();
+    }
+}
+
 
 
 
@@ -682,10 +735,8 @@ private class PercentTextDisplayHandler : AbstractColorTextGaugeDisplayHandler, 
 
 
 private class ProgressBarDisplayHandler : AbstractColorTextGaugeDisplayHandler, IGaugeDisplayHandler {
-    private static double MAX_VALUE = 1;
-
-    public ProgressBarDisplayHandler(String title, String missingValMsg, Color clrOff, Color clrPending, Color clrOn)
-    : base(title, missingValMsg, clrOff, clrPending, clrOn, MAX_VALUE) { }
+    public ProgressBarDisplayHandler(String title, String missingValMsg, Color clrOff, Color clrPending, Color clrOn, double maxValue = 1)
+    : base(title, missingValMsg, clrOff, clrPending, clrOn, maxValue) { }
 
     public bool requiresCache() {
         return true;
@@ -736,6 +787,30 @@ private class BlockStateDisplayHandler : AbstractColorTextGaugeDisplayHandler, I
 }
 
 
+private class ValueTextDisplayHandler : AbstractColorTextGaugeDisplayHandler, IGaugeDisplayHandler {
+	private String unitName;
+
+    public ValueTextDisplayHandler(String title, String missingValMsg, Color clrOff, Color clrPending, Color clrOn, String unitName)
+    : base(title, missingValMsg, clrOff, clrPending, clrOn, 1) { 
+		this.unitName = unitName;
+	}
+
+    public bool requiresCache() {
+        return true;
+    }
+
+    public void applyValue(IMyTextPanel targetPanel, double value) {
+        // Not required because we are using the cached value === requiresCache() returns true
+    }
+
+    public String generateCacheValue(double value) {
+        return (value == MISSING_VALUE) ? missingValMsg : (title + string.Format("{0:N2}", value) + " " + unitName);
+    }
+}
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -755,6 +830,7 @@ private class ApplicationContext {
         gaugeManager.setApplicationContext(this);
         gaugeManagers.Add(displayMode, gaugeManager);
 		uniqueGaugeManagers.Add(gaugeManager);
+		gaugeManager.init();
     }
 }
 
@@ -771,8 +847,8 @@ private void initWiring() {
         = new StatefulGaugeManager(GridTerminalSystem, 
                                     new JumpDriveChargeDataHandler(),
                                     new Dictionary<GaugeDisplayMode,IGaugeDisplayHandler>() {
-                                            {GaugeDisplayMode.JMP_DRV_AVG_CHRG_TEXT  , new PercentTextDisplayHandler("Jump Drives: ", "!!! NO JUMP DRIVES !!!" , CLR_JMP_CHARGE__ERR, CLR_JMP_CHARGE__PND, CLR_JMP_CHARGE__FULL)},
-                                            {GaugeDisplayMode.JMP_DRV_AVG_CHRG_PRGBAR, new ProgressBarDisplayHandler("JMP DRV: "    , "!!! NO JUMP DRIVES !!!" , CLR_JMP_CHARGE__ERR, CLR_JMP_CHARGE__PND, CLR_JMP_CHARGE__FULL)},
+                                            {GaugeDisplayMode.JMP_DRV_VALUE_TEXT  , new PercentTextDisplayHandler("Jump Drives: ", "!!! NO JUMP DRIVES !!!" , CLR_JMP_CHARGE__ERR, CLR_JMP_CHARGE__PND, CLR_JMP_CHARGE__FULL)},
+                                            {GaugeDisplayMode.JMP_DRV_VALUE_PRGBAR, new ProgressBarDisplayHandler("JMP DRV: "    , "!!! NO JUMP DRIVES !!!" , CLR_JMP_CHARGE__ERR, CLR_JMP_CHARGE__PND, CLR_JMP_CHARGE__FULL)},
                                     });
 
  // Gauge manager for monitoring the overall status of jump drives
@@ -784,9 +860,23 @@ private void initWiring() {
 											{GaugeDisplayMode.JMP_DRV_STATUS_TEXT   , new BlockStateDisplayHandler ("JMP DRV: "    , "!!! JMP DRV: CFG ERR !!!", CLR_JMP_STATUS__ERR, CLR_JMP_STATUS__OFF, CLR_JMP_STATUS__ON  )}
                                     });
 
-    applicationContext.addGaugeManagerForDisplayMode(GaugeDisplayMode.JMP_DRV_AVG_CHRG_TEXT  , jumpDriveChargeGaugeManager);
-    applicationContext.addGaugeManagerForDisplayMode(GaugeDisplayMode.JMP_DRV_AVG_CHRG_PRGBAR, jumpDriveChargeGaugeManager);
-    applicationContext.addGaugeManagerForDisplayMode(GaugeDisplayMode.JMP_DRV_STATUS_TEXT    , jumpDriveStatusGaugeManager);
+ // Gauge manager for getting the ship's speed, assuming there are control seats or cockpits in the grid
+	StatefulGaugeManager shipSpeedGaugeManager
+		= new StatefulGaugeManager(GridTerminalSystem,
+									new SpeedometerDataHandler(),
+									new Dictionary<GaugeDisplayMode,IGaugeDisplayHandler>() {
+										{GaugeDisplayMode.SPD_VALUE_TEXT  , new ValueTextDisplayHandler  ("Speed: ", "!!! NO COCKPIT !!!" , CLR_JMP_CHARGE__ERR, CLR_JMP_CHARGE__PND, CLR_JMP_CHARGE__FULL, "m/s")},
+                                        {GaugeDisplayMode.SPD_VALUE_PRGBAR, new ProgressBarDisplayHandler("Speed: ", "!!! NO COCKPIT !!!" , CLR_JMP_CHARGE__ERR, CLR_JMP_CHARGE__PND, CLR_JMP_CHARGE__FULL, MAX_SPEED_MPS)},
+									});
+
+ // Wiring for the jump drives
+    applicationContext.addGaugeManagerForDisplayMode(GaugeDisplayMode.JMP_DRV_VALUE_TEXT  , jumpDriveChargeGaugeManager);
+    applicationContext.addGaugeManagerForDisplayMode(GaugeDisplayMode.JMP_DRV_VALUE_PRGBAR, jumpDriveChargeGaugeManager);
+    applicationContext.addGaugeManagerForDisplayMode(GaugeDisplayMode.JMP_DRV_STATUS_TEXT , jumpDriveStatusGaugeManager);
+
+ // Wiring for the speedometer
+	applicationContext.addGaugeManagerForDisplayMode(GaugeDisplayMode.SPD_VALUE_TEXT  , shipSpeedGaugeManager);
+    applicationContext.addGaugeManagerForDisplayMode(GaugeDisplayMode.SPD_VALUE_PRGBAR, shipSpeedGaugeManager);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

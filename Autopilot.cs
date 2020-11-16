@@ -891,6 +891,7 @@ private class FlightAssistantBuilder {
  *         STOP           : stop cruising
  *         INCREASE SPEED : increase cruising speed
  *         DECREASE SPEED : decrease cruising speed
+ *         FULL THRUST    : drives all thrusters to full power
  */
 private class CruiseControl : IFlightAssistantFeature {
 	// References to other members of the framework
@@ -916,6 +917,22 @@ private class CruiseControl : IFlightAssistantFeature {
 	 */
 	private bool isCruising = false;
 
+	/**
+	 *  When this option is active (set to TRUE), the cruise control ignores
+	 *  the set cruising speed and just runs all the thrusters at maximum.
+	 *  However, restarting/stopping the curies, or increasing/decreasing the
+	 *  cruising speed, for that matter, will deactivate the full thrust.
+	 */
+	private bool isFullThrust = false;
+
+	/**
+	 *  This is set to TRUE when Full thrust is activated and it is set
+	 *  to FALSE immediately after the backward thrusters have been set to
+	 *  full power. The goal is to prevent iterating through the list of
+	 *  backward thrusters more times than it's actually necessary.
+	 */
+	private bool hasInitiatedFullThrust = false;
+
 	public string getName() {
 		return "Cruise Control";
 	}
@@ -934,24 +951,46 @@ private class CruiseControl : IFlightAssistantFeature {
 		switch (argument) {
 			case "GO":
 				isCruising = true;
+				isFullThrust = false;
 				break;
 			case "STOP":
 				isCruising = false;
+				isFullThrust = false;
 				idleThrusters();
 				break;
 			case "INCREASE SPEED":
 				cruisingSpeed = addNumbersWithThreshold(cruisingSpeed, config.cruiseControlSpeedIncrement, config.cruiseControlMaxSpeed);
+				isFullThrust = false;
 			//	log.info("Cruising speed: " + cruisingSpeed.ToString());
 				break;
 			case "DECREASE SPEED":
 				cruisingSpeed = subtractNumbersWithThreshold(cruisingSpeed, config.cruiseControlSpeedIncrement, 0);
+				isFullThrust = false;
 			//	log.info("Cruising speed: " + cruisingSpeed.ToString());
 				break;
+			case "FULL THRUST":
+				isCruising = true;
+				isFullThrust = true;
+				hasInitiatedFullThrust = true;
+				break;
+				
 			default:
 				if (isCruising) {
-					cruise();
+					if(isFullThrust) {
+						cruiseAtFullThrust();
+					} else {
+						cruise();
+					}
 				}
 				break;
+		}
+	}
+
+	private void cruiseAtFullThrust() {
+		if (hasInitiatedFullThrust) {
+			idleThrusters();
+			thrustControl.fullThrust(Direction.FORWARD);
+			hasInitiatedFullThrust = false;
 		}
 	}
 

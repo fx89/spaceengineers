@@ -1,0 +1,14 @@
+// IMyGridProgram:
+// https://bloc97.github.io/SpaceEngineersModAPIDocs/html/463b6ab6-1cde-294b-2056-95e563450f52.htm
+
+// API doc:
+// https://bloc97.github.io/SpaceEngineersModAPIDocs/html/531c215a-1026-ad88-5a6f-3e5bdbd0be1d.htm
+// https://bloc97.github.io/SpaceEngineersModAPIDocs/search.html?SearchText=imyentity
+// https://bloc97.github.io/SpaceEngineersModAPIDocs/search.html?SearchText=imyshipcontroller
+// https://bloc97.github.io/SpaceEngineersModAPIDocs/html/e25bf703-440e-0955-6058-30bbc21cd419.htm
+
+// Better API doc:
+// https://github.com/malware-dev/MDK-SE/wiki/Sandbox.ModAPI.Ingame.IMyShipController
+
+// Some actions reference:
+// https://www.spaceengineerswiki.com/Programming_Guide/Action_List

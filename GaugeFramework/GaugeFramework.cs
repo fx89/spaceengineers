@@ -6,7 +6,9 @@ private enum GaugeDisplayMode {
     JMP_DRV_VALUE_PRGBAR,    // display the average charge in the form of "JMP DRV: ||||||||||||||||||||||||"
     JMP_DRV_STATUS_TEXT,     // display the overall status of the jump drives as either ONLINE or OFFLINE
     SPD_VALUE_TEXT,          // display the current speed of the grid in m/s - works only when the grid has at least a cockpit or a control block
-    SPD_VALUE_PRGBAR         // displays the current speed in the form of "SPEED: ||||||||||||||||||||||||" - works only when the grid has at least a cockpit or a control block
+    SPD_VALUE_PRGBAR,        // display the current speed in the form of "SPEED: ||||||||||||||||||||||||" - works only when the grid has at least a cockpit or a control block
+    INTEGRITY_VALUE_TEXT,    // display the current structural integrity in %
+    ARMOR_VALUE_TEXT         // display the current armor integrity in %
 }
 
 const int TEXT_IS_NOT_MULTILINE = -1;    // use this constant in textDisplayPanelModes configuration
@@ -38,6 +40,9 @@ static Color CLR_JMP_CHARGE__PND  = new Color(  0,   0, 255, 255); // BLUE  - if
 static Color CLR_JMP_STATUS__OFF  = new Color(  0,   0, 255, 255); // BLUE  - if the jump drives are turned off
 static Color CLR_JMP_STATUS__ON   = new Color(255, 255, 255, 255); // WHITE - if the jump drives are turned on
 static Color CLR_JMP_STATUS__ERR  = new Color(255,   0,   0, 255); // RED   - if the jump drives are missing or not synchronized
+
+// Configure general purpose colors
+static Color CLR_ORANGE = new Color(255, 170, 0);
 
 // Configure the names of the text panels and the type of information (display mode) to be shown on each of them
 // If there are multiple text panels having the same name, they will all be updated with the configured information
@@ -310,15 +315,15 @@ private static void execForAllBlocksOfTypeWithName<T> (
 // MINI FRAMEWORK //////////////////////////////////////////////////////////////////////////////////////////////////
 
 private interface IGaugeDataHandler {
-	/**
-	 *  Called only once, upon initialization. This is where intensive operations
-	 *  such as extracting object references from the grid may be done.
-	 */
-	void init(IMyGridTerminalSystem GridTerminalSystem);
+    /**
+     *  Called only once, upon initialization. This is where intensive operations
+     *  such as extracting object references from the grid may be done.
+     */
+    void init(IMyGridTerminalSystem GridTerminalSystem);
 
-	/**
-	 *  Called upon each tick. Extracts the gauge value.
-	 */
+    /**
+     *  Called upon each tick. Extracts the gauge value.
+     */
     double computeValue(IMyGridTerminalSystem GridTerminalSystem);
 }
 
@@ -392,9 +397,9 @@ private class StatefulGaugeManager {
         }
     }
 
-	public void init() {
-		dataHandler.init(GridTerminalSystem);
-	}
+    public void init() {
+        dataHandler.init(GridTerminalSystem);
+    }
 
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -424,7 +429,7 @@ private class StatefulGaugeManager {
                     GaugeDisplayMode displayMode,
                     Func<Dictionary<GaugeDisplayMode,double>,bool> condition,
                     Action<ApplicationContext> additionalAction
-	) {
+    ) {
      // If a condition function was given and it evaluates to false, then the current iteration must be skipped
         if (condition != null && condition(applicationContext.gaugeValues) == false) {
             return;
@@ -590,8 +595,8 @@ private class JumpDriveChargeDataHandler : IGaugeDataHandler {
         return avgCharge > 1 ? 1 : avgCharge; // CAP at 1 just to make sure it doesn't overflow on the LCD text panel
     }
 
-	public void init(IMyGridTerminalSystem GridTerminalSystem) {
-	}
+    public void init(IMyGridTerminalSystem GridTerminalSystem) {
+    }
 
     public double computeValue(IMyGridTerminalSystem GridTerminalSystem) {
         return getAverageJumpDriveCharge(GridTerminalSystem);
@@ -609,8 +614,8 @@ private class JumpDriveChargeDataHandler : IGaugeDataHandler {
  */
 private class JumpDriveStatusDataHandler : IGaugeDataHandler {
 
-	public void init(IMyGridTerminalSystem GridTerminalSystem) {
-	}
+    public void init(IMyGridTerminalSystem GridTerminalSystem) {
+    }
 
     public double computeValue(IMyGridTerminalSystem GridTerminalSystem) {
      // Initialize the overall state
@@ -653,25 +658,146 @@ private class JumpDriveStatusDataHandler : IGaugeDataHandler {
  * Extracts the current speed of the ship in meters per second
  */
 private class SpeedometerDataHandler : IGaugeDataHandler {
-	private IMyShipController controller = null;
+    private IMyShipController controller = null;
 
-	public void init(IMyGridTerminalSystem GridTerminalSystem) {
-		// Get the list of control stations
-		List<IMyShipController> gridControllers = new List<IMyShipController>();
-		GridTerminalSystem.GetBlocksOfType<IMyShipController>(gridControllers);
+    public void init(IMyGridTerminalSystem GridTerminalSystem) {
+        // Get the list of control stations
+        List<IMyShipController> gridControllers = new List<IMyShipController>();
+        GridTerminalSystem.GetBlocksOfType<IMyShipController>(gridControllers);
 
-		// Raise exception if there is no control station in the grid
-		if (gridControllers == null || gridControllers.Count <= 0) {
-			return;
-		}
+        // Raise exception if there is no control station in the grid
+        if (gridControllers == null || gridControllers.Count <= 0) {
+            return;
+        }
 
-		//Get the first one
-		controller = gridControllers.First();
-	}
+        //Get the first one
+        controller = gridControllers.First();
+    }
 
     public double computeValue(IMyGridTerminalSystem GridTerminalSystem) {
-		return (controller == null) ? MISSING_VALUE : controller.GetShipSpeed();
+        return (controller == null) ? MISSING_VALUE : controller.GetShipSpeed();
     }
+}
+
+
+/**
+ * Measures the structural integrity of the ship by comparing the current
+ * non-armor block count to the original non-armor block count
+ */
+private class StructuralIntegrityDataHandler : IGaugeDataHandler {
+    private double initialBlocksCount = 0d;
+    
+    private IMyGridTerminalSystem GridTerminalSystem;
+
+    public void init(IMyGridTerminalSystem GridTerminalSystem) {
+		
+		
+        this.GridTerminalSystem = GridTerminalSystem;
+
+        this.initialBlocksCount = countBlocks();
+
+        if (initialBlocksCount == 0d) {
+            throw new Exception("The ship does not appear to have any blocks");
+        }
+    }
+
+    public double computeValue(IMyGridTerminalSystem GridTerminalSystem) {
+        double currentBlocksCount = countBlocks();
+        return currentBlocksCount / initialBlocksCount;
+    }
+
+    private int countBlocks() {
+        List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
+        GridTerminalSystem.GetBlocks(blocks);
+        return blocks.Count;
+    }
+}
+
+
+
+/**
+ * Measures the armor health as the average health of all armor blocks in the grid
+ */
+private class ArmorIntegrityDataHandler : IGaugeDataHandler {
+	// Initialization will happen over multiple iterations.
+	// This is how many locations in the bounding box will
+	// be parsed in any one init iteration.
+	private static int N_POSITIONS_PER_INIT_ITERATION = 10000;
+
+	// The cube grid
+	private IMyCubeGrid cubeGrid = PROGRAM.Me.CubeGrid;
+
+	// Iterators for the bounding box of the cube grid
+	private int x = 0, y = 0, z = 0;
+
+	// Turns TRUE once all the locations in the bounding box have been parsed
+	private bool isInitialized = false;
+
+	// Contains the positions of all the armor blocks present in the grid
+	// at the time the script started ticking
+	List<Vector3I> initialArmorBlockPositions = new List<Vector3I>();
+
+
+    public void init(IMyGridTerminalSystem GridTerminalSystem) {
+		// Initialization is done in the actuallyInit() method, which
+		// spreads the initialization process across multiple iterations
+		// of the logic loop, to avoid the "script is too complex" error.
+		
+		x = cubeGrid.Min.X;
+		y = cubeGrid.Min.Y;
+		z = cubeGrid.Min.Z;
+    }
+
+    public double computeValue(IMyGridTerminalSystem GridTerminalSystem) {
+		return isInitialized ? actuallyComputeValue() : actuallyInit();
+    }
+
+	private double actuallyInit() {
+		for (int i = 0 ; i < N_POSITIONS_PER_INIT_ITERATION ; i++) {
+			Vector3I vPos = new Vector3I(x,y,z);
+			if (gridPosIsArmorBlock(cubeGrid, vPos)) {
+				initialArmorBlockPositions.Add(vPos);
+			}
+
+			x++; if (x > cubeGrid.Max.X) {
+				x = cubeGrid.Min.X;
+				y++; if (y > cubeGrid.Max.Y) {
+					y = cubeGrid.Min.Y;
+					z++; if (z > cubeGrid.Max.Z) {
+						PROGRAM.Echo("Initialized");
+						isInitialized = true;
+						break;
+					}
+				}
+			}
+		}
+
+		return NOT_FOUND;
+	}
+
+	private double actuallyComputeValue() {
+		// Check how many of the original armor blocks are still present in the grid
+		double currentArmorBlocksCount = 0d;
+		foreach (Vector3I pos in initialArmorBlockPositions) {
+			if (gridPosIsArmorBlock(cubeGrid, pos)) {
+				currentArmorBlocksCount++;
+			}
+		}
+		PROGRAM.Echo(currentArmorBlocksCount.ToString() + " / " + initialArmorBlockPositions.Count.ToString());
+		// Compute the ratio
+		return currentArmorBlocksCount / initialArmorBlockPositions.Count;
+	}
+
+	/**
+	 *  GetCubeBlock() returns an IMySlimBlock if an IMyTerminalBlock resides at the
+	 *  specified position. If an armor block is there, then it returns null. On the
+	 *  other hand, CubeExists() returns true if any cube resides at the given coor-
+	 *  dinates. If there is a cube at the given position and that cube is not and
+	 *  IMyTerminalBlock, then it must be an armor block.
+	 */
+	private static bool gridPosIsArmorBlock(IMyCubeGrid cubeGrid, Vector3I pos) {
+		return cubeGrid.CubeExists(pos) && (cubeGrid.GetCubeBlock(pos) == null);
+	}
 }
 
 
@@ -788,12 +914,12 @@ private class BlockStateDisplayHandler : AbstractColorTextGaugeDisplayHandler, I
 
 
 private class ValueTextDisplayHandler : AbstractColorTextGaugeDisplayHandler, IGaugeDisplayHandler {
-	private String unitName;
+    private String unitName;
 
     public ValueTextDisplayHandler(String title, String missingValMsg, Color clrOff, Color clrPending, Color clrOn, String unitName)
     : base(title, missingValMsg, clrOff, clrPending, clrOn, 1) { 
-		this.unitName = unitName;
-	}
+        this.unitName = unitName;
+    }
 
     public bool requiresCache() {
         return true;
@@ -829,8 +955,8 @@ private class ApplicationContext {
     public void addGaugeManagerForDisplayMode(GaugeDisplayMode displayMode, StatefulGaugeManager gaugeManager) {
         gaugeManager.setApplicationContext(this);
         gaugeManagers.Add(displayMode, gaugeManager);
-		uniqueGaugeManagers.Add(gaugeManager);
-		gaugeManager.init();
+        uniqueGaugeManagers.Add(gaugeManager);
+        gaugeManager.init();
     }
 }
 
@@ -857,17 +983,33 @@ private void initWiring() {
         = new StatefulGaugeManager(GridTerminalSystem, 
                                     new JumpDriveStatusDataHandler(),
                                     new Dictionary<GaugeDisplayMode,IGaugeDisplayHandler>() {
-											{GaugeDisplayMode.JMP_DRV_STATUS_TEXT   , new BlockStateDisplayHandler ("JMP DRV: "    , "!!! JMP DRV: CFG ERR !!!", CLR_JMP_STATUS__ERR, CLR_JMP_STATUS__OFF, CLR_JMP_STATUS__ON  )}
+                                            {GaugeDisplayMode.JMP_DRV_STATUS_TEXT   , new BlockStateDisplayHandler ("JMP DRV: "    , "!!! JMP DRV: CFG ERR !!!", CLR_JMP_STATUS__ERR, CLR_JMP_STATUS__OFF, CLR_JMP_STATUS__ON  )}
                                     });
 
  // Gauge manager for getting the ship's speed, assuming there are control seats or cockpits in the grid
-	StatefulGaugeManager shipSpeedGaugeManager
-		= new StatefulGaugeManager(GridTerminalSystem,
-									new SpeedometerDataHandler(),
-									new Dictionary<GaugeDisplayMode,IGaugeDisplayHandler>() {
-										{GaugeDisplayMode.SPD_VALUE_TEXT  , new ValueTextDisplayHandler  ("Speed: ", "!!! NO COCKPIT !!!" , CLR_JMP_CHARGE__ERR, CLR_JMP_CHARGE__PND, CLR_JMP_CHARGE__FULL, "m/s")},
+    StatefulGaugeManager shipSpeedGaugeManager
+        = new StatefulGaugeManager(GridTerminalSystem,
+                                    new SpeedometerDataHandler(),
+                                    new Dictionary<GaugeDisplayMode,IGaugeDisplayHandler>() {
+                                        {GaugeDisplayMode.SPD_VALUE_TEXT  , new ValueTextDisplayHandler  ("Speed: ", "!!! NO COCKPIT !!!" , CLR_JMP_CHARGE__ERR, CLR_JMP_CHARGE__PND, CLR_JMP_CHARGE__FULL, "m/s")},
                                         {GaugeDisplayMode.SPD_VALUE_PRGBAR, new ProgressBarDisplayHandler("Speed: ", "!!! NO COCKPIT !!!" , CLR_JMP_CHARGE__ERR, CLR_JMP_CHARGE__PND, CLR_JMP_CHARGE__FULL, MAX_SPEED_MPS)},
-									});
+                                    });
+
+ // Gauge manager for getting the ship's structural integrity
+    StatefulGaugeManager shipStructuralIntegrityGaugeManager
+        = new StatefulGaugeManager(GridTerminalSystem,
+                                    new StructuralIntegrityDataHandler(),
+                                    new Dictionary<GaugeDisplayMode,IGaugeDisplayHandler>() {
+                                        {GaugeDisplayMode.INTEGRITY_VALUE_TEXT, new PercentTextDisplayHandler("Integrity: ", "!!! CRITICAL DAMAGE !!!" , CLR_JMP_CHARGE__ERR, CLR_JMP_CHARGE__PND, CLR_JMP_CHARGE__FULL)},
+                                    });
+
+ // Gauge manager for getting the ship's structural integrity
+    StatefulGaugeManager shipArmorIntegrityGaugeManager
+        = new StatefulGaugeManager(GridTerminalSystem,
+                                    new ArmorIntegrityDataHandler(),
+                                    new Dictionary<GaugeDisplayMode,IGaugeDisplayHandler>() {
+                                        {GaugeDisplayMode.ARMOR_VALUE_TEXT, new PercentTextDisplayHandler("Armor: ", "Initializing" , CLR_JMP_CHARGE__ERR, CLR_ORANGE, CLR_JMP_CHARGE__FULL)},
+                                    });
 
  // Wiring for the jump drives
     applicationContext.addGaugeManagerForDisplayMode(GaugeDisplayMode.JMP_DRV_VALUE_TEXT  , jumpDriveChargeGaugeManager);
@@ -875,8 +1017,12 @@ private void initWiring() {
     applicationContext.addGaugeManagerForDisplayMode(GaugeDisplayMode.JMP_DRV_STATUS_TEXT , jumpDriveStatusGaugeManager);
 
  // Wiring for the speedometer
-	applicationContext.addGaugeManagerForDisplayMode(GaugeDisplayMode.SPD_VALUE_TEXT  , shipSpeedGaugeManager);
+    applicationContext.addGaugeManagerForDisplayMode(GaugeDisplayMode.SPD_VALUE_TEXT  , shipSpeedGaugeManager);
     applicationContext.addGaugeManagerForDisplayMode(GaugeDisplayMode.SPD_VALUE_PRGBAR, shipSpeedGaugeManager);
+    
+ // Wiring for the ship integrity counters
+    applicationContext.addGaugeManagerForDisplayMode(GaugeDisplayMode.INTEGRITY_VALUE_TEXT, shipStructuralIntegrityGaugeManager);
+	applicationContext.addGaugeManagerForDisplayMode(GaugeDisplayMode.ARMOR_VALUE_TEXT    , shipArmorIntegrityGaugeManager     );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -891,7 +1037,7 @@ public Program() {
  // I wish this property was of type int so I could use whatever value I wanted and get an exception if it was outside the valid range
     Runtime.UpdateFrequency = UpdateFrequency.Update100;
 
-	PROGRAM = this; // for debugging from other contexts
+    PROGRAM = this; // for debugging from other contexts
 
  // Init the wiring without which nothing will happen
     initWiring();

@@ -522,6 +522,12 @@ private void InitPages(MyOnScreenApplication OnScreenApplication) {
 
 // SCRIPT LOGIC ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Monitoring the dish =============================================================================================
+//
+// This detects the frame when the dish has been turned on or off. If the dish has just been turned on, the status
+// of the PwrButtonSprite changes to "on". If the dish has just been turned off, the status of the PwrButtonSprite
+// changes to "off".
+//
 private int dishEnabledState = 0;
 
 private void MonitorAntenna() {
@@ -538,6 +544,19 @@ private void MonitorAntenna() {
     }
 }
 
+
+
+// Monitoring the piston lifting the dish ==========================================================================
+//
+// This detects the motion of the piston. If the piston is extending (which is interpreted as going up), then the
+// UpButtonSprite state is set to "on". If the piston is retracting (which is interpreted as going down), then the
+// state of the DownButtonSprite is set to "on". For both sprites, the state is set to "off" if the piston is either
+// stationary or not going in the right direction. 
+//
+// NOTE: This can be optimized to not set the sprite state at every frame. It's not really an issue, but it does have
+//       to loop through the dictionary to find the state and this operation is not needed at every frame. 
+//
+//
 private float prevPistonPosition = 0;
 private bool isPistonPositionChangingUp = false;
 private bool isPistonPositionChangingDown = false;

@@ -452,7 +452,7 @@ private void InitScript() {
                 );
 
  // Add a bitmap font to the screen, so it can draw text
-    Screen.SetDefaultFont(CreateBitmapFont());
+    Screen.GetCanvas().SetDefaultFont(CreateBitmapFont());
 
  // Announce the ending of the screen initialization
     PROGRAM.Echo("Screen initialized");
@@ -485,12 +485,11 @@ private void InitPages(MyOnScreenApplication OnScreenApplication) {
  // The POST message
     MyPage POSTMessagePage = (MyPage) new MyPage()
       // Custom drawing
-        .WithClientDrawMethod((MyScreen Screen) => {
-            Screen.FillEntireScreen(O);
-            Screen.DrawColorText(31, 13, "Dish Control", true, true);
-            Screen.DrawRect(31, 23, 102, 33, true, true);
-            Screen.DrawColorText(34, 25, "INITIALIZED", false, false);
-            Screen.FlushBufferToScreen();
+        .WithClientDrawMethod((MyCanvas Canvas) => {
+            Canvas.Clear(O);
+            Canvas.DrawColorText(31, 13, "Dish Control", true, true);
+            Canvas.DrawRect(31, 23, 102, 33, true, true);
+            Canvas.DrawColorText(34, 25, "INITIALIZED", false, false);
         return 0;})
       // Custom cycling
         .WithClientCycleMethod((MyOnScreenObject obj) => {
@@ -610,45 +609,59 @@ private void RenderLoop() {
 
 // THE DRAWING FRAMEWORK ///////////////////////////////////////////////////////////////////////////////////////////
 
-private class MyScreen {
-    private IMyTextPanel TargetLCD;
-    private char pixelValueOn;
-    private char pixelValueOff;
-    private bool mirrorX;
-
-    private bool[] ScreenBuffer;
+/**
+ * Provides drawing functionality on a bool[] buffer. The bool[] buffe
+ * can be copied into sprites, which may be drawn on other MyCanvas
+ * objects. The canvas also functions as part of the screen (MyScreen
+ * class), which applies its buffer to LCD panels.
+ */
+private class MyCanvas {
+    private bool[] Buffer;
     private int resX;
     private int resY;
     private int length;
-
     private MySprite[] DefaultFont;
 
-
-    public MyScreen(IMyTextPanel TargetLCD, int resX, int resY, char pixelValueOn, char pixelValueOff, bool mirrorX) {
-        this.TargetLCD = TargetLCD;
+    public MyCanvas(int resX, int resY) {
         this.resX = resX;
         this.resY = resY;
         length = resY * resX;
-        ScreenBuffer = new bool[length];
-        this.pixelValueOn = pixelValueOn;
-        this.pixelValueOff = pixelValueOff;
-        this.mirrorX = mirrorX;
+        Buffer = new bool[length];
     }
 
+ /**
+  * Return a reference to the buffer, for use by the screen
+  */
+    public bool[] GetBuffer() {
+        return Buffer;
+    }
+
+ /**
+  * Return a copy of the buffer, for use in the creation of new sprites
+  */
+    public bool[] GetBufferCopy() {
+        return CopyBoolArray(Buffer, false);
+    }
+
+ /**
+  * A default font must be set if text is to be drawn on this canvas
+  */
     public void SetDefaultFont(MySprite[] DefaultFont) {
         this.DefaultFont = DefaultFont;
     }
 
-    public void Clear() {
-        FillEntireScreen(false);
-    }
-
-    public void FillEntireScreen(bool value) {
+ /*
+  * Fills the buffer with the given value (either on or off, caller's preference)
+  */
+    public void Clear(bool value = false) {
         for (int x = 0 ; x < length ; x++) {
-            ScreenBuffer[x] = value;
+            Buffer[x] = value;
         }
     }
 
+ /**
+  * Handles drawing options (transparency, color inversion)
+  */
     private bool TransformSourcePixelValue(bool sourcePixelValue, bool targetPixelValue, bool invertColors, bool transparentBackground) {
         if (invertColors) {
             if (transparentBackground) {
@@ -665,10 +678,16 @@ private class MyScreen {
         }
     }
 
+ /**
+  * Copies the bits of the given sprite to the chosen location on the canvas
+  */
     public void BitBlt(MySprite sprite, int x, int y) {
         BitBltExt(sprite, x, y, false, false);
     }
 
+ /**
+  * Copies the bits of the given sprite to the chosen location on the canvas
+  */
     public void BitBltExt(MySprite sprite, int x, int y, bool invertColors, bool transparentBackground) {
      // Don't start drawing outside the screen - too complicated for late night programming
         if (x < 0 || y < 0)  {
@@ -688,7 +707,7 @@ private class MyScreen {
         for (int spritePos = 0 ; spritePos < spriteLength ; spritePos++) {
          // Copy the value of the current pixel, after transforming it according to the given rules
             try {
-                ScreenBuffer[screenPos] = TransformSourcePixelValue(sprite.data[spritePos], ScreenBuffer[screenPos], invertColors, transparentBackground);
+                Buffer[screenPos] = TransformSourcePixelValue(sprite.data[spritePos], Buffer[screenPos], invertColors, transparentBackground);
             } catch(Exception exc) {
          // If it's outside the screen, it will overflow and it will throw an exception which needs to be caught
             }
@@ -712,10 +731,18 @@ private class MyScreen {
         }
     }
 
+ /**
+  * Draws text on the canvas using the default font.
+  * Multi-font support may be added at a later time.
+  */
     public void DrawText(int x, int y, String text) {
         DrawColorText(x, y, text, false, false);
     }
 
+ /**
+  * Draws text on the canvas using the default font.
+  * Multi-font support may be added at a later time.
+  */
     public void DrawColorText(int x, int y, String text, bool invertColors, bool transparentBackground) {
      // Don't crash if there's no font selected or if there's no text provided
         if (DefaultFont == null || text == null) {
@@ -754,6 +781,9 @@ private class MyScreen {
         }
     }
 
+ /**
+  * Draws a rectangle on the canvas. The rectangle may be filed or empty.
+  */
     public void DrawRect(int x1, int y1, int x2, int y2, bool invertColors, bool fillRect) {
      // Make sure the algorithm processes the coordinates from top left to bottom right
         int actualX1 = x1 > x2 ? x2 : x1;
@@ -768,7 +798,7 @@ private class MyScreen {
         if (actualY2 >= resY) actualY2 = resY - 1;
  
      // The rectWidth is useful for understanding where the right margin is in relation to the left margin
-     // This, in turn, makes it easier to navigate the ScreenBuffer
+     // This, in turn, makes it easier to navigate the Buffer
         int rectWidth = actualX2 - actualX1;
 
      // Initialize the vertical cursor
@@ -776,21 +806,21 @@ private class MyScreen {
 
      // Run the vertical cursor through each line of the rectangle
         while (screenPosY <= actualY2) {
-         // Set the ScreenBuffer cursor to the left margin of the current line
+         // Set the Buffer cursor to the left margin of the current line
             int screenPos = screenPosY * resX + actualX1;
 
          // The value to set is either ON (normal value) or OFF (if the invertColors flag is set)
             bool targetColor = !invertColors;
 
          // The target color must be set to the left and right margin of the current line of the rectangle
-            ScreenBuffer[screenPos] = targetColor;
-            ScreenBuffer[screenPos + rectWidth-1] = targetColor;
+            Buffer[screenPos] = targetColor;
+            Buffer[screenPos + rectWidth-1] = targetColor;
 
          // In case the fillRect flag was set or if this is the first or the last line of the rectangle,
          // the target color must be set to all the pixels in between the left and the right margin
             if (fillRect || screenPosY == actualY1 || screenPosY == actualY2) {
                 for (int innerPos = screenPos ; innerPos < screenPos + rectWidth ; innerPos++) {
-                    ScreenBuffer[innerPos] = targetColor;
+                    Buffer[innerPos] = targetColor;
                 }
             }
 
@@ -801,15 +831,53 @@ private class MyScreen {
         
         
     }
+}
 
-    private bool[] MirrorBufferOnXAxis() {
+
+
+/**
+ * The purpose of this class is to link an LCD panel to a MyCanvas.
+ * The drawing on the canvas is represented on the target LCD panel
+ * as a string of characters representing the pixels of the canvas.
+ */
+private class MyScreen {
+ // Properties needed for the functionality of the screen
+    private IMyTextPanel TargetLCD;
+    private MyCanvas Canvas;
+    private bool mirrorX;
+
+ // Properties which are also needed by FlushBufferToScreen()
+    private int resX, resY;
+    private char pixelValueOn, pixelValueOff;
+
+    public MyScreen(IMyTextPanel TargetLCD, int resX, int resY, char pixelValueOn, char pixelValueOff, bool mirrorX) {
+        this.TargetLCD = TargetLCD;
+        Canvas = new MyCanvas(resX, resY);
+        this.mirrorX = mirrorX;
+        this.resX = resX;
+        this.resY = resY;
+        this.pixelValueOn = pixelValueOn;
+        this.pixelValueOff = pixelValueOff;
+    }
+
+ /**
+   * Unlike glass windows, for which there are versions with the tinted glass
+   * both on the outside and the inside, LCD panels display the text only on
+   * one side. This becomes an issue when dealing with transparent LCDs, which
+   * display the text on both sides. On one side, the text will be mirrored.
+   * If that's the side that needs to be seen, then the content must be adjusted
+   * so that it displays properly. Hence, the method MirrorBufferOnXAxis().
+   */
+    private bool[] MirrorBufferOnXAxis(bool[] Buffer) {
+        int length = Buffer.Count();
+
         bool[] MirroredBuffer = new bool[length];
         
         int mirrorPosX = resX-1;
         int mirrorPos = mirrorPosX;
         
         for (int sourcePos = 0 ; sourcePos < length ; sourcePos++) {
-            MirroredBuffer[mirrorPos] = ScreenBuffer[sourcePos];
+            MirroredBuffer[mirrorPos] = Buffer[sourcePos];
             
             mirrorPos--;
             mirrorPosX--;
@@ -822,9 +890,20 @@ private class MyScreen {
         return MirroredBuffer;
     }
 
+  /**
+   * Converts the bool[] buffer of the canvas into a string of pixels which
+   * is then attributed to the Text property of the target LDC panel. It is
+   * a method used before in Space Engineers to simulate graphics modes on
+   * text panels. The font size must be made small enough that characters
+   * look like pixels. The best looking characters must be chosen.
+   */
     public void FlushBufferToScreen() {
+     // Get the buffer from the Canvas
+        bool[] Buffer = Canvas.GetBuffer();
+        int length = Buffer.Count();
+
      // In case the screen needs to be mirrored on the X axis
-        bool[] SourceBuffer = mirrorX ? MirrorBufferOnXAxis() : ScreenBuffer;
+        bool[] SourceBuffer = mirrorX ? MirrorBufferOnXAxis(Buffer) : Buffer;
         
      // Create a new "rendered buffer" having the length of the screen buffer + once more the height to accommodate new line characters
         StringBuilder renderedBuffer = new StringBuilder(length + resY + 1);
@@ -845,6 +924,10 @@ private class MyScreen {
 
      // Apply the newly rendered buffer to the target LCD
         TargetLCD.WriteText(renderedBuffer.ToString());
+    }
+
+    public MyCanvas GetCanvas() {
+        return Canvas;
     }
 }
 
@@ -920,7 +1003,7 @@ private abstract class MyOnScreenObject {
     protected MyOnScreenObject ParentObject;
     private List<MyOnScreenObject> ChildObjects = new List<MyOnScreenObject>();
     private Func<MyOnScreenObject, int> ClientCycleMethod;
-    private Func<MyScreen, int> ClientDrawMethod;
+    private Func<MyCanvas, int> ClientDrawMethod;
 
     public MyOnScreenObject(MyOnScreenObject ParentObject, int x, int y, bool isVisible) {
         this.ParentObject = ParentObject;
@@ -942,7 +1025,7 @@ private abstract class MyOnScreenObject {
         return this;
     }
 
-    public MyOnScreenObject WithClientDrawMethod(Func<MyScreen, int> ClientDrawMethod) {
+    public MyOnScreenObject WithClientDrawMethod(Func<MyCanvas, int> ClientDrawMethod) {
         this.ClientDrawMethod = ClientDrawMethod;
         return this;
     }
@@ -1029,11 +1112,11 @@ private abstract class MyOnScreenObject {
         if (IsObjectVisible()) {
          // Run the client draw method, if it's set
             if (ClientDrawMethod != null) {
-                ClientDrawMethod(TargetScreen);
+                ClientDrawMethod(TargetScreen.GetCanvas());
             }
 
          // Call the object's draw method
-            Draw(TargetScreen);
+            Draw(TargetScreen.GetCanvas());
         }
     }
 
@@ -1062,7 +1145,7 @@ private abstract class MyOnScreenObject {
   /**
    * This method handles the drawing of the object onto the TargetScreen
    */
-    protected abstract void Draw(MyScreen TargetScreen);
+    protected abstract void Draw(MyCanvas TargetCanvas);
 }
 
 
@@ -1140,8 +1223,8 @@ private class MyStatefulAnimatedSprite : MyOnScreenObject {
         CurrentFrame = CurrentState.GetFrame();
     }
 
-    protected override void Draw(MyScreen TargetScreen) {
-        TargetScreen.BitBltExt(
+    protected override void Draw(MyCanvas TargetCanvas) {
+        TargetCanvas.BitBltExt(
             CurrentFrame,
             GetAbsoluteX(), GetAbsoluteY(),
             false, CurrentState.IsBackgroundTransparent()
@@ -1223,8 +1306,8 @@ private class MyTextLabel : MyOnScreenObject {
         // Nothing to do here
     }
     
-    protected override void Draw(MyScreen TargetScreen) {
-        TargetScreen.DrawColorText(GetAbsoluteX(), GetAbsoluteY(), text, invertColors, transparentBackground);
+    protected override void Draw(MyCanvas TargetCanvas) {
+        TargetCanvas.DrawColorText(GetAbsoluteX(), GetAbsoluteY(), text, invertColors, transparentBackground);
     }
 }
 
@@ -1250,11 +1333,11 @@ private class MyPanel : MyOnScreenObject {
         // Nothing to do here
     }
 
-    protected override void Draw(MyScreen TargetScreen) {
+    protected override void Draw(MyCanvas TargetCanvas) {
         int absoluteX = GetAbsoluteX();
         int absoluteY = GetAbsoluteY();
 
-        TargetScreen.DrawRect(absoluteX, absoluteY, absoluteX + width, absoluteY + height, false, isFilled);
+        TargetCanvas.DrawRect(absoluteX, absoluteY, absoluteX + width, absoluteY + height, false, isFilled);
     }
 }
 
@@ -1274,7 +1357,7 @@ private class MyPage : MyOnScreenObject {
         // Nothing to do here
     }
     
-    protected override void Draw(MyScreen TargetScreen) {
+    protected override void Draw(MyCanvas TargetCanvas) {
         // Nothing to do here
     }
 }
@@ -1315,7 +1398,7 @@ private class MyOnScreenApplication {
     }
 
     public void Cycle() {
-        TargetScreen.Clear();
+        TargetScreen.GetCanvas().Clear();
         CurrentPage.Cycle(TargetScreen);
         TargetScreen.FlushBufferToScreen();
     }
@@ -1350,7 +1433,7 @@ public T FindFirstBlockWithName<T>(String blockName) {
     return default(T);
 }
 
-public static bool[] NegateBoolArray(bool[] BoolArray) {
+public static bool[] CopyBoolArray(bool[] BoolArray, bool negate) {
     if (BoolArray == null || BoolArray.Count() == 0) {
         return null;
     }
@@ -1358,10 +1441,14 @@ public static bool[] NegateBoolArray(bool[] BoolArray) {
     bool[] ret = new bool[BoolArray.Count()];
 
     for (int i = 0 ; i < BoolArray.Count() ; i++) {
-        ret[i] = !BoolArray[i];
+        ret[i] = negate ? !BoolArray[i] : BoolArray[i];
     }
 
     return ret;
+}
+
+public static bool[] NegateBoolArray(bool[] BoolArray) {
+    return CopyBoolArray(BoolArray, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

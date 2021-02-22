@@ -3,6 +3,7 @@
 
 // Target LCD configuration
 private const String TARGET_LCD_NAME                = "DISH_STATUS_LCD";
+private const String TARGET_LCD_2_NAME              = "DISH_STATUS_LCD_2";
 private const int TARGET_LCD_RESOLUTION_WIDTH       = 130;
 private const int TARGET_LCD_RESOLUTION_HEIGHT      =  50;
 private const bool TARGET_LCD_IS_MIRRORED_ON_X_AXIS = true;
@@ -14,7 +15,12 @@ private const String PISTON_NAME           = "Dish Piston";
 private const String DISH_NAME             = "X-COM HQ";
 
 // The POST message will be displayed for a given number of loops.
-private const int POST_DURATION = 10;
+private const int POST_DURATION = 30;
+
+// Which application should run on the screen?
+// 1 = Elevation control
+// 2 = Rotation control
+private static int APP_IDX = 2;
 
 
 
@@ -43,14 +49,15 @@ private const bool O = true;
 private const bool _ = false;
 
 private IMyTextPanel    TargetLcd;
+private IMyTextPanel    TargetLcd2;
 private IMyPistonBase   PistonBase;
 private IMyMotorStator  HorizontalRotor; // attribute = Orientation
 private IMyMotorStator  VerticalRotor;
 private IMyRadioAntenna Dish;
 
-private MyScreen Screen;
+private MyScreen Screen, Screen2;
 
-private MyOnScreenApplication OnScreenApplication;
+private MyOnScreenApplication OnScreenApplication, OnScreenApplication2;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -103,6 +110,51 @@ private static MySprite SPRITE_DOWN_OFF = new MySprite(13, 10, new bool[] {
 });
 
 private static MySprite SPRITE_DOWN_ON = new MySprite(13, 10, NegateBoolArray(SPRITE_DOWN_OFF.data));
+
+private static MySprite SPRITE_LEFTRIGHT_OFF = new MySprite(13, 10, new bool[] {
+    _,_,_,_,_,_,_,_,_,_,_,_,_,
+    _,_,_,_,_,_,_,_,_,_,_,_,_,
+    _,_,_,_,O,O,_,O,O,_,_,_,_,
+    _,_,_,O,O,O,_,O,O,O,_,_,_,
+    _,_,O,O,O,O,_,O,O,O,O,_,_,
+    _,O,O,O,O,O,_,O,O,O,O,O,_,
+    _,_,O,O,O,O,_,O,O,O,O,_,_,
+    _,_,_,O,O,O,_,O,O,O,_,_,_,
+    _,_,_,_,O,O,_,O,O,_,_,_,_,
+    _,_,_,_,_,_,_,_,_,_,_,_,_,
+});
+
+private static MySprite SPRITE_LEFTRIGHT_ON = new MySprite(13, 10, NegateBoolArray(SPRITE_LEFTRIGHT_OFF.data));
+
+private static MySprite SPRITE_UPDOWN_OFF = new MySprite(13, 10, new bool[] {
+    _,_,_,_,_,_,_,_,_,_,_,_,_,
+    _,_,_,_,_,_,O,_,_,_,_,_,_,
+    _,_,_,_,_,O,O,O,_,_,_,_,_,
+    _,_,_,_,O,O,O,O,O,_,_,_,_,
+    _,_,_,O,O,O,O,O,O,O,_,_,_,
+    _,_,_,_,_,_,_,_,_,_,_,_,_,
+    _,_,_,O,O,O,O,O,O,O,_,_,_,
+    _,_,_,_,O,O,O,O,O,_,_,_,_,
+    _,_,_,_,_,O,O,O,_,_,_,_,_,
+    _,_,_,_,_,_,O,_,_,_,_,_,_,
+});
+
+private static MySprite SPRITE_UPDOWN_ON = new MySprite(13, 10, NegateBoolArray(SPRITE_UPDOWN_OFF.data));
+
+private static MySprite SPRITE_REVERSE_OFF = new MySprite(13, 10, new bool[] {
+    _,_,_,_,_,_,_,_,_,_,_,_,_,
+    _,_,_,_,_,_,_,_,_,_,_,_,_,
+    _,_,_,_,O,O,O,O,O,O,O,_,_,
+    _,_,_,O,_,_,_,_,_,_,_,O,_,
+    _,O,O,O,O,O,_,_,_,_,_,O,_,
+    _,_,O,O,O,_,_,_,_,_,_,O,_,
+    _,_,_,O,_,_,_,_,_,_,_,O,_,
+    _,_,_,_,_,_,_,_,_,_,_,O,_,
+    _,_,_,O,_,_,_,_,_,_,_,O,_,
+    _,_,_,_,O,O,O,O,O,O,O,_,_,
+});
+
+private static MySprite SPRITE_REVERSE_ON = new MySprite(13, 10, NegateBoolArray(SPRITE_REVERSE_OFF.data));
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -425,6 +477,27 @@ MyStatefulAnimatedSprite UpButtonSprite = new MyStatefulAnimatedSprite(null, 0, 
     .WithState("on" , new MyStatefulAnimatedSpriteState(new MySprite[] { SPRITE_UP_OFF, SPRITE_UP_ON }))
 ;
 
+MyStatefulAnimatedSprite LeftRightButtonSprite = new MyStatefulAnimatedSprite(null, 0, 0, true)
+    .WithState("off", new MyStatefulAnimatedSpriteState(new MySprite[] { SPRITE_LEFTRIGHT_OFF}))
+    .WithState("on" , new MyStatefulAnimatedSpriteState(new MySprite[] { SPRITE_LEFTRIGHT_OFF, SPRITE_LEFTRIGHT_ON }))
+;
+
+MyStatefulAnimatedSprite UpDownButtonSprite = new MyStatefulAnimatedSprite(null, 0, 0, true)
+    .WithState("off", new MyStatefulAnimatedSpriteState(new MySprite[] { SPRITE_UPDOWN_OFF}))
+    .WithState("on" , new MyStatefulAnimatedSpriteState(new MySprite[] { SPRITE_UPDOWN_OFF, SPRITE_UPDOWN_ON }))
+;
+
+MyStatefulAnimatedSprite LeftRightReverseButtonSprite = new MyStatefulAnimatedSprite(null, 0, 0, true)
+    .WithState("off", new MyStatefulAnimatedSpriteState(new MySprite[] { SPRITE_REVERSE_OFF}))
+    .WithState("on" , new MyStatefulAnimatedSpriteState(new MySprite[] { SPRITE_REVERSE_OFF, SPRITE_REVERSE_ON }))
+;
+
+MyStatefulAnimatedSprite UpDownReverseButtonSprite = new MyStatefulAnimatedSprite(null, 0, 0, true)
+    .WithState("off", new MyStatefulAnimatedSpriteState(new MySprite[] { SPRITE_REVERSE_OFF}))
+    .WithState("on" , new MyStatefulAnimatedSpriteState(new MySprite[] { SPRITE_REVERSE_OFF, SPRITE_REVERSE_ON }))
+;
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -437,6 +510,7 @@ private void InitScript() {
 
  // Fetching objects from the GridTerminalSystem
     TargetLcd       = FindFirstBlockWithName<IMyTextPanel>(TARGET_LCD_NAME);
+    TargetLcd2      = FindFirstBlockWithName<IMyTextPanel>(TARGET_LCD_2_NAME);
     PistonBase      = FindFirstBlockWithName<IMyPistonBase>(PISTON_NAME);
     HorizontalRotor = FindFirstBlockWithName<IMyMotorStator>(HORIZONTAL_ROTOR_NAME);
     VerticalRotor   = FindFirstBlockWithName<IMyMotorStator>(VERTICAL_ROTOR_NAME);
@@ -450,18 +524,27 @@ private void InitScript() {
                     SCREEN_PIXEL_VALUE_ON, SCREEN_PIXEL_VALUE_OFF, // Which chars to represent the ON / OFF values of a given pixel
                     TARGET_LCD_IS_MIRRORED_ON_X_AXIS // Whether or not to mirror the image on the X asis
                 );
+    Screen2 = new MyScreen(
+                    TargetLcd2, // Target text panel
+                    TARGET_LCD_RESOLUTION_WIDTH, TARGET_LCD_RESOLUTION_HEIGHT, // Screen resolution
+                    SCREEN_PIXEL_VALUE_ON, SCREEN_PIXEL_VALUE_OFF, // Which chars to represent the ON / OFF values of a given pixel
+                    TARGET_LCD_IS_MIRRORED_ON_X_AXIS // Whether or not to mirror the image on the X asis
+                );
 
  // Add a bitmap font to the screen, so it can draw text
-    Screen.GetCanvas().SetDefaultFont(CreateBitmapFont());
+    MySprite[] DefaultFont = CreateBitmapFont();
+    Screen.GetCanvas().SetDefaultFont(DefaultFont);
+    Screen2.GetCanvas().SetDefaultFont(DefaultFont);
 
  // Announce the ending of the screen initialization
     PROGRAM.Echo("Screen initialized");
 
- // Create the application for the previously initialized screen
+ // Create the applications for the previously initialized screens
     OnScreenApplication = new MyOnScreenApplication(Screen);
+    OnScreenApplication2 = new MyOnScreenApplication(Screen2);
 
  // Initialize the pages of the application
-    InitPages(OnScreenApplication);
+    InitPages();
 
  // Final message
     PROGRAM.Echo("Application initialized");
@@ -475,12 +558,13 @@ private void InitScript() {
 
 private const int PAGE_INDEX_POST = 0;
 private const int PAGE_INDEX_ELEVATION_CONTROL = 1;
+private const int PAGE_INDEX_ROTATION_CONTROL = 1;
 
 private int nFramesOnPostMessage = 0;
 
 
 
-private void InitPages(MyOnScreenApplication OnScreenApplication) {
+private void InitPages() {
 
  // The POST message
     MyPage POSTMessagePage = (MyPage) new MyPage()
@@ -496,9 +580,11 @@ private void InitPages(MyOnScreenApplication OnScreenApplication) {
             nFramesOnPostMessage++;
             if (nFramesOnPostMessage > POST_DURATION) {
                 OnScreenApplication.SwitchToPage(PAGE_INDEX_ELEVATION_CONTROL);
+                OnScreenApplication2.SwitchToPage(PAGE_INDEX_ROTATION_CONTROL);
             }
         return 0;});
     OnScreenApplication.AddPage(POSTMessagePage);
+    OnScreenApplication2.AddPage(POSTMessagePage);
 
 
 
@@ -513,6 +599,20 @@ private void InitPages(MyOnScreenApplication OnScreenApplication) {
     ElevationControlScreen.AddChildAtLocation(UpButtonSprite  , 96, 40);
 
     ElevationControlScreen.AddChild(new MyPanel(null, 0, 10, 130, 30, true, false));
+
+
+ // The rotation control screen
+    MyPage RotationControlScreen = new MyPage();
+    OnScreenApplication2.AddPage(RotationControlScreen);
+
+    RotationControlScreen.AddChild(new MyTextLabel("ROTATION CONTROL", null, 20, 0, true, false, false));
+
+    RotationControlScreen.AddChildAtLocation(LeftRightButtonSprite , 22, 40);
+    RotationControlScreen.AddChildAtLocation(LeftRightReverseButtonSprite  , 46, 40);
+    RotationControlScreen.AddChildAtLocation(UpDownButtonSprite, 69, 40);
+    RotationControlScreen.AddChildAtLocation(UpDownReverseButtonSprite  , 96, 40);
+
+    RotationControlScreen.AddChild(new MyPanel(null, 0, 10, 130, 30, true, false));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -587,6 +687,36 @@ private void MonitorThePiston() {
     }
 }
 
+
+
+// Monitoring the rotors ===========================================================================================
+
+private Decimal horizontalRotorAngle;
+
+private void MonitorHorizontalRotor() {
+    Decimal RoundAngle = Math.Round(Convert.ToDecimal(HorizontalRotor.Angle), 2);
+    if (RoundAngle != horizontalRotorAngle) {
+        horizontalRotorAngle = RoundAngle;
+        LeftRightButtonSprite.SetState("on");
+    } else {
+        LeftRightButtonSprite.SetState("off");
+    }
+}
+
+private Decimal verticalRotorAngle;
+
+private void MonitorVerticalRotor() {
+    Decimal RoundAngle = Math.Round(Convert.ToDecimal(VerticalRotor.Angle), 2);
+    if (RoundAngle != verticalRotorAngle) {
+        verticalRotorAngle = RoundAngle;
+        UpDownButtonSprite.SetState("on");
+    } else {
+        UpDownButtonSprite.SetState("off");
+    }
+}
+
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -596,10 +726,17 @@ private void MonitorThePiston() {
 private void LogicLoop() {
     MonitorAntenna();
     MonitorThePiston();
+    MonitorHorizontalRotor();
+    MonitorVerticalRotor();
 }
 
 private void RenderLoop() {
-    OnScreenApplication.Cycle();
+    if (APP_IDX == 1) {
+        OnScreenApplication.Cycle();
+    };
+    if (APP_IDX == 2) {
+        OnScreenApplication2.Cycle();
+    };
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

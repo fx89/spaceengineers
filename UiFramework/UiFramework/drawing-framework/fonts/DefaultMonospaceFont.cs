@@ -6,370 +6,56 @@ using System.Threading.Tasks;
 
 namespace IngameScript.drawing_framework.fonts {
     public class DefaultMonospaceFont {
-        private const bool O = true;
-        private const bool _ = false;
+        private static MySprite CreateFontSprite(byte[] bytes) {
+         // Cut a couple of pixels off the right edge
+            MyCanvas Cvs = new MyCanvas(6, 7);
+            Cvs.BitBlt(new MySprite(8, 7, DrawingFrameworkUtils.ByteArrayToBoolArray(bytes)), 0, 0);
+            return new MySprite(6, 7, Cvs.GetBuffer());
+        }
 
-        private const int DEFAULT_FONT_HEIGHT = 7;
+        private static MySprite SPRITE_A = CreateFontSprite(new byte[] { 0x70,0x88,0x88,0xf8,0x88,0x88,0x88 });
+        private static MySprite SPRITE_B = CreateFontSprite(new byte[] { 0xf0,0x88,0x88,0xf0,0x88,0x88,0xf0 });
+        private static MySprite SPRITE_C = CreateFontSprite(new byte[] { 0x78,0x80,0x80,0x80,0x80,0x80,0x78 });
+        private static MySprite SPRITE_D = CreateFontSprite(new byte[] { 0xf0,0x88,0x88,0x88,0x88,0x88,0xf0 });
+        private static MySprite SPRITE_E = CreateFontSprite(new byte[] { 0xf0,0x80,0x80,0xf0,0x80,0x80,0xf0 });
+        private static MySprite SPRITE_F = CreateFontSprite(new byte[] { 0xf8,0x80,0x80,0xf0,0x80,0x80,0x80 });
+        private static MySprite SPRITE_G = CreateFontSprite(new byte[] { 0x78,0x80,0x80,0x98,0x88,0x88,0x78 });
+        private static MySprite SPRITE_H = CreateFontSprite(new byte[] { 0x88,0x88,0x88,0xf8,0x88,0x88,0x88 });
+        private static MySprite SPRITE_I = CreateFontSprite(new byte[] { 0x70,0x20,0x20,0x20,0x20,0x20,0x70 });
+        private static MySprite SPRITE_J = CreateFontSprite(new byte[] { 0x10,0x10,0x10,0x10,0x10,0x10,0x60 });
+        private static MySprite SPRITE_K = CreateFontSprite(new byte[] { 0x88,0x90,0xa0,0xc0,0xa0,0x90,0x88 });
+        private static MySprite SPRITE_L = CreateFontSprite(new byte[] { 0x80,0x80,0x80,0x80,0x80,0x80,0x78 });
+        private static MySprite SPRITE_M = CreateFontSprite(new byte[] { 0x88,0xd8,0xa8,0x88,0x88,0x88,0x88 });
+        private static MySprite SPRITE_N = CreateFontSprite(new byte[] { 0x88,0xc8,0xa8,0x98,0x88,0x88,0x88 });
+        private static MySprite SPRITE_O = CreateFontSprite(new byte[] { 0x70,0x88,0x88,0x88,0x88,0x88,0x70 });
+        private static MySprite SPRITE_P = CreateFontSprite(new byte[] { 0xf0,0x88,0x88,0xf0,0x80,0x80,0x80 });
+        private static MySprite SPRITE_Q = CreateFontSprite(new byte[] { 0x70,0x88,0x88,0x88,0xa8,0x90,0x68 });
+        private static MySprite SPRITE_R = CreateFontSprite(new byte[] { 0xf0,0x88,0x88,0xf0,0xa0,0x90,0x88 });
+        private static MySprite SPRITE_S = CreateFontSprite(new byte[] { 0x78,0x80,0x80,0x70,0x08,0x08,0xf0 });
+        private static MySprite SPRITE_T = CreateFontSprite(new byte[] { 0xf8,0x20,0x20,0x20,0x20,0x20,0x20 });
+        private static MySprite SPRITE_U = CreateFontSprite(new byte[] { 0x88,0x88,0x88,0x88,0x88,0x88,0x70 });
+        private static MySprite SPRITE_V = CreateFontSprite(new byte[] { 0x88,0x88,0x88,0x88,0x88,0x50,0x20 });
+        private static MySprite SPRITE_W = CreateFontSprite(new byte[] { 0x88,0x88,0x88,0x88,0x88,0xa8,0x50 });
+        private static MySprite SPRITE_X = CreateFontSprite(new byte[] { 0x88,0x88,0x50,0x20,0x50,0x88,0x88 });
+        private static MySprite SPRITE_Y = CreateFontSprite(new byte[] { 0x88,0x88,0x50,0x20,0x20,0x20,0x20 });
+        private static MySprite SPRITE_Z = CreateFontSprite(new byte[] { 0xf8,0x08,0x10,0x20,0x40,0x80,0xf8 });
+        private static MySprite SPRITE_1 = CreateFontSprite(new byte[] { 0x10,0x30,0x50,0x10,0x10,0x10,0x38 });
+        private static MySprite SPRITE_2 = CreateFontSprite(new byte[] { 0x30,0x48,0x08,0x08,0x70,0x40,0x78 });
+        private static MySprite SPRITE_3 = CreateFontSprite(new byte[] { 0x30,0x48,0x08,0x30,0x08,0x48,0x30 });
+        private static MySprite SPRITE_4 = CreateFontSprite(new byte[] { 0x10,0x30,0x50,0x90,0xf8,0x10,0x10 });
+        private static MySprite SPRITE_5 = CreateFontSprite(new byte[] { 0x78,0x40,0x40,0x70,0x08,0x08,0x70 });
+        private static MySprite SPRITE_6 = CreateFontSprite(new byte[] { 0x78,0x80,0x80,0xf0,0x88,0x88,0x70 });
+        private static MySprite SPRITE_7 = CreateFontSprite(new byte[] { 0xf8,0x08,0x08,0x10,0x20,0x40,0x40 });
+        private static MySprite SPRITE_8 = CreateFontSprite(new byte[] { 0x70,0x88,0x88,0x70,0x88,0x88,0x70 });
+        private static MySprite SPRITE_9 = CreateFontSprite(new byte[] { 0x70,0x88,0x88,0x70,0x08,0x08,0xf0 });
+        private static MySprite SPRITE_0 = CreateFontSprite(new byte[] { 0x70,0x88,0x98,0xa8,0xc8,0x88,0x70 });
 
-        private static MySprite SPRITE_A = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,O,O,O,_,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,O,O,O,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_
-        });
-
-        private static MySprite SPRITE_B = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,O,O,O,_,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,O,O,O,_,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,O,O,O,_,_
-        });
-
-        private static MySprite SPRITE_C = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,O,O,O,O,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            _,O,O,O,O,_
-        });
-
-        private static MySprite SPRITE_D = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,O,O,_,_,_,
-            O,_,_,O,_,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,O,_,_,
-            O,O,O,_,_,_
-        });
-
-        private static MySprite SPRITE_E = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,O,O,O,O,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            O,O,O,O,_,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            O,O,O,O,O,_
-        });
-
-        private static MySprite SPRITE_F = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,O,O,O,O,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            O,O,O,O,_,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_
-        });
-
-        private static MySprite SPRITE_G = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,O,O,O,O,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            O,_,_,O,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            _,O,O,O,O,_
-        });
-
-        private static MySprite SPRITE_H = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,O,O,O,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_
-        });
-
-        private static MySprite SPRITE_I = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,O,O,O,_,_,
-            _,_,O,_,_,_,
-            _,_,O,_,_,_,
-            _,_,O,_,_,_,
-            _,_,O,_,_,_,
-            _,_,O,_,_,_,
-            _,O,O,O,_,_
-        });
-
-        private static MySprite SPRITE_J = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,_,_,O,_,_,
-            _,_,_,O,_,_,
-            _,_,_,O,_,_,
-            _,_,_,O,_,_,
-            _,_,_,O,_,_,
-            _,_,_,O,_,_,
-            _,O,O,_,_,_
-        });
-
-        private static MySprite SPRITE_K = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,_,_,_,O,_,
-            O,_,_,O,_,_,
-            O,_,O,_,_,_,
-            O,O,_,_,_,_,
-            O,_,O,_,_,_,
-            O,_,_,O,_,_,
-            O,_,_,_,O,_
-        });
-
-        private static MySprite SPRITE_L = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            _,O,O,O,O,_
-        });
-
-        private static MySprite SPRITE_M = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,_,_,_,O,_,
-            O,O,_,O,O,_,
-            O,_,O,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_
-        });
-
-        private static MySprite SPRITE_N = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,_,_,_,O,_,
-            O,O,_,_,O,_,
-            O,_,O,_,O,_,
-            O,_,_,O,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_
-        });
-
-        private static MySprite SPRITE_O = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,O,O,O,_,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            _,O,O,O,_,_
-        });
-
-        private static MySprite SPRITE_P = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,O,O,O,_,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,O,O,O,_,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_
-        });
-
-        private static MySprite SPRITE_Q = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,O,O,O,_,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,O,_,O,_,
-            O,_,_,O,_,_,
-            _,O,O,_,O,_
-        });
-
-        private static MySprite SPRITE_R = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,O,O,O,_,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,O,O,O,_,_,
-            O,_,O,_,_,_,
-            O,_,_,O,_,_,
-            O,_,_,_,O,_
-        });
-
-        private static MySprite SPRITE_S = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,O,O,O,O,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            _,O,O,O,_,_,
-            _,_,_,_,O,_,
-            _,_,_,_,O,_,
-            O,O,O,O,_,_
-        });
-
-        private static MySprite SPRITE_T = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,O,O,O,O,_,
-            _,_,O,_,_,_,
-            _,_,O,_,_,_,
-            _,_,O,_,_,_,
-            _,_,O,_,_,_,
-            _,_,O,_,_,_,
-            _,_,O,_,_,_
-        });
-
-        private static MySprite SPRITE_U = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            _,O,O,O,_,_
-        });
-
-        private static MySprite SPRITE_V = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            _,O,_,O,_,_,
-            _,_,O,_,_,_
-        });
-
-        private static MySprite SPRITE_W = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            O,_,O,_,O,_,
-            _,O,_,O,_,_
-        });
-
-        private static MySprite SPRITE_X = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            _,O,_,O,_,_,
-            _,_,O,_,_,_,
-            _,O,_,O,_,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_
-        });
-
-        private static MySprite SPRITE_Y = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            _,O,_,O,_,_,
-            _,_,O,_,_,_,
-            _,_,O,_,_,_,
-            _,_,O,_,_,_,
-            _,_,O,_,_,_
-        });
-
-        private static MySprite SPRITE_Z = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,O,O,O,O,_,
-            _,_,_,_,O,_,
-            _,_,_,O,_,_,
-            _,_,O,_,_,_,
-            _,O,_,_,_,_,
-            O,_,_,_,_,_,
-            O,O,O,O,O,_
-        });
-
-        private static MySprite SPRITE_1 = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,_,_,O,_,_,
-            _,_,O,O,_,_,
-            _,O,_,O,_,_,
-            _,_,_,O,_,_,
-            _,_,_,O,_,_,
-            _,_,_,O,_,_,
-            _,_,O,O,O,_
-        });
-
-        private static MySprite SPRITE_2 = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,_,O,O,_,_,
-            _,O,_,_,O,_,
-            _,_,_,_,O,_,
-            _,_,_,_,O,_,
-            _,O,O,O,_,_,
-            _,O,_,_,_,_,
-            _,O,O,O,O,_
-        });
-
-        private static MySprite SPRITE_3 = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,_,O,O,_,_,
-            _,O,_,_,O,_,
-            _,_,_,_,O,_,
-            _,_,O,O,_,_,
-            _,_,_,_,O,_,
-            _,O,_,_,O,_,
-            _,_,O,O,_,_
-        });
-
-        private static MySprite SPRITE_4 = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,_,_,O,_,_,
-            _,_,O,O,_,_,
-            _,O,_,O,_,_,
-            O,_,_,O,_,_,
-            O,O,O,O,O,_,
-            _,_,_,O,_,_,
-            _,_,_,O,_,_
-        });
-
-        private static MySprite SPRITE_5 = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,O,O,O,O,_,
-            _,O,_,_,_,_,
-            _,O,_,_,_,_,
-            _,O,O,O,_,_,
-            _,_,_,_,O,_,
-            _,_,_,_,O,_,
-            _,O,O,O,_,_
-        });
-
-        private static MySprite SPRITE_6 = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,O,O,O,O,_,
-            O,_,_,_,_,_,
-            O,_,_,_,_,_,
-            O,O,O,O,_,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            _,O,O,O,_,_
-        });
-
-        private static MySprite SPRITE_7 = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            O,O,O,O,O,_,
-            _,_,_,_,O,_,
-            _,_,_,_,O,_,
-            _,_,_,O,_,_,
-            _,_,O,_,_,_,
-            _,O,_,_,_,_,
-            _,O,_,_,_,_
-        });
-
-        private static MySprite SPRITE_8 = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,O,O,O,_,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            _,O,O,O,_,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            _,O,O,O,_,_
-        });
-
-        private static MySprite SPRITE_9 = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,O,O,O,_,_,
-            O,_,_,_,O,_,
-            O,_,_,_,O,_,
-            _,O,O,O,O,_,
-            _,_,_,_,O,_,
-            _,_,_,_,O,_,
-            O,O,O,O,_,_
-        });
-
-        private static MySprite SPRITE_0 = new MySprite(6, DEFAULT_FONT_HEIGHT, new bool[] {
-            _,O,O,O,_,_,
-            O,_,_,_,O,_,
-            O,_,_,O,O,_,
-            O,_,O,_,O,_,
-            O,O,_,_,O,_,
-            O,_,_,_,O,_,
-            _,O,O,O,_,_
-        });
+        private static MySprite SPRITE_DASH   = CreateFontSprite(new byte[] { 0x00,0x00,0x00,0x00,0x00,0x00,0xf8 });
+        private static MySprite SPRITE_HYPHEN = CreateFontSprite(new byte[] { 0x00,0x00,0x00,0xf8,0x00,0x00,0x00 });
+        private static MySprite SPRITE_GT     = CreateFontSprite(new byte[] { 0x40,0x20,0x10,0x08,0x10,0x20,0x40 });
+        private static MySprite SPRITE_LT     = CreateFontSprite(new byte[] { 0x08,0x10,0x20,0x40,0x20,0x10,0x08 });
+        private static MySprite SPRITE_EQ     = CreateFontSprite(new byte[] { 0x00,0x00,0xf8,0x00,0xf8,0x00,0x00 });
+        private static MySprite SPRITE_PCT    = CreateFontSprite(new byte[] { 0xc0,0xc8,0x10,0x20,0x40,0x98,0x18 });
 
         private static MySprite[] Create() {
             MySprite[] BitmapFont = new MySprite[256];
@@ -410,6 +96,12 @@ namespace IngameScript.drawing_framework.fonts {
             BitmapFont['8'] = SPRITE_8;
             BitmapFont['9'] = SPRITE_9;
             BitmapFont['0'] = SPRITE_0;
+            BitmapFont['_'] = SPRITE_DASH;
+            BitmapFont['-'] = SPRITE_HYPHEN;
+            BitmapFont['<'] = SPRITE_LT;
+            BitmapFont['>'] = SPRITE_GT;
+            BitmapFont['='] = SPRITE_EQ;
+            BitmapFont['%'] = SPRITE_PCT;
 
             return BitmapFont;
         }

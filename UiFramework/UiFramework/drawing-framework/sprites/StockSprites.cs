@@ -9,83 +9,29 @@ namespace IngameScript.drawing_framework.sprites {
         private const bool O = true;
         private const bool _ = false;
 
-        public static MySprite SPRITE_PWR = new MySprite(13, 10, new bool[] {
-             _,_,_,_,_,_,O,_,_,_,_,_,_,
-             _,_,_,_,_,_,O,_,_,_,_,_,_,
-             _,_,_,O,O,_,O,_,O,O,_,_,_,
-             _,_,O,_,_,_,O,_,_,_,O,_,_,
-             _,_,O,_,_,_,O,_,_,_,O,_,_,
-             _,_,O,_,_,_,_,_,_,_,O,_,_,
-             _,_,O,_,_,_,_,_,_,_,O,_,_,
-             _,_,O,_,_,_,_,_,_,_,O,_,_,
-             _,_,_,O,O,O,O,O,O,O,_,_,_,
-             _,_,_,_,_,_,_,_,_,_,_,_,_,
-        });
+        public static MySprite SPRITE_PWR = new MySprite(16, 10, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
+             0x02,0,0x1a,0xc0,0x22,0x20,0x22,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x1f,0xc0,0,0
+        }));
 
-        public static MySprite SPRITE_UP = new MySprite(13, 10, new bool[] {
-             _,_,_,_,_,_,_,_,_,_,_,_,_,
-             _,_,_,_,_,_,_,_,_,_,_,_,_,
-             _,_,_,_,_,_,O,_,_,_,_,_,_,
-             _,_,_,_,_,O,O,O,_,_,_,_,_,
-             _,_,_,_,O,O,O,O,O,_,_,_,_,
-             _,_,_,O,O,O,O,O,O,O,_,_,_,
-             _,_,O,O,O,O,O,O,O,O,O,_,_,
-             _,_,O,O,O,O,O,O,O,O,O,_,_,
-             _,_,O,O,O,O,O,O,O,O,O,_,_,
-             _,_,_,_,_,_,_,_,_,_,_,_,_,
-        });
+        public static MySprite SPRITE_UP = new MySprite(16, 10, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
+             0,0,0,0,0x02,0,0x07,0,0x0f,0x80,0x1f,0xc0,0x3f,0xe0,0x3f,0xe0,0x3f,0xe0,0,0
+        }));
 
-        public static MySprite SPRITE_DOWN = new MySprite(13, 10, new bool[] {
-             _,_,_,_,_,_,_,_,_,_,_,_,_,
-             _,_,_,_,_,_,_,_,_,_,_,_,_,
-             _,_,O,O,O,O,O,O,O,O,O,_,_,
-             _,_,O,O,O,O,O,O,O,O,O,_,_,
-             _,_,O,O,O,O,O,O,O,O,O,_,_,
-             _,_,_,O,O,O,O,O,O,O,_,_,_,
-             _,_,_,_,O,O,O,O,O,_,_,_,_,
-             _,_,_,_,_,O,O,O,_,_,_,_,_,
-             _,_,_,_,_,_,O,_,_,_,_,_,_,
-             _,_,_,_,_,_,_,_,_,_,_,_,_,
-        });
+        public static MySprite SPRITE_DOWN = new MySprite(16, 10, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
+             0,0,0,0,0x3f,0xe0,0x3f,0xe0,0x3f,0xe0,0x1f,0xc0,0x0f,0x80,0x07,0,0x02,0,0,0
+        }));
 
-        public static MySprite SPRITE_LEFTRIGHT = new MySprite(13, 10, new bool[] {
-            _,_,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,O,O,_,O,O,_,_,_,_,
-            _,_,_,O,O,O,_,O,O,O,_,_,_,
-            _,_,O,O,O,O,_,O,O,O,O,_,_,
-            _,O,O,O,O,O,_,O,O,O,O,O,_,
-            _,_,O,O,O,O,_,O,O,O,O,_,_,
-            _,_,_,O,O,O,_,O,O,O,_,_,_,
-            _,_,_,_,O,O,_,O,O,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,_,_,_,_,
-        });
+        public static MySprite SPRITE_LEFTRIGHT = new MySprite(16, 10, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
+            0,0,0,0,0x0d,0x80,0x1d,0xc0,0x3d,0xe0,0x7d,0xf0,0x3d,0xe0,0x1d,0xc0,0x0d,0x80,0,0
+        }));
 
-        public static MySprite SPRITE_UPDOWN = new MySprite(13, 10, new bool[] {
-            _,_,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,O,_,_,_,_,_,_,
-            _,_,_,_,_,O,O,O,_,_,_,_,_,
-            _,_,_,_,O,O,O,O,O,_,_,_,_,
-            _,_,_,O,O,O,O,O,O,O,_,_,_,
-            _,_,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,O,O,O,O,O,O,O,_,_,_,
-            _,_,_,_,O,O,O,O,O,_,_,_,_,
-            _,_,_,_,_,O,O,O,_,_,_,_,_,
-            _,_,_,_,_,_,O,_,_,_,_,_,_,
-        });
+        public static MySprite SPRITE_UPDOWN = new MySprite(16, 10, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
+            0,0,0x02,0,0x07,0,0x0f,0x80,0x1f,0xc0,0,0,0x1f,0xc0,0x0f,0x80,0x07,0,0x02,0
+        }));
 
-        public static MySprite SPRITE_REVERSE = new MySprite(13, 10, new bool[] {
-            _,_,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,O,O,O,O,O,O,O,_,_,
-            _,_,_,O,_,_,_,_,_,_,_,O,_,
-            _,O,O,O,O,O,_,_,_,_,_,O,_,
-            _,_,O,O,O,_,_,_,_,_,_,O,_,
-            _,_,_,O,_,_,_,_,_,_,_,O,_,
-            _,_,_,_,_,_,_,_,_,_,_,O,_,
-            _,_,_,O,_,_,_,_,_,_,_,O,_,
-            _,_,_,_,O,O,O,O,O,O,O,_,_,
-        });
+        public static MySprite SPRITE_REVERSE = new MySprite(16, 10, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
+            0,0,0,0,0x0f,0xe0,0x10,0x10,0x7c,0x10,0x38,0x10,0x10,0x10,0,0x10,0x10,0x10,0x0f,0xe0
+        }));
 
         public static MySprite SCROLLBAR_SLIDER = new MySprite(5, 5, new bool[] {
             _,O,O,O,_,
@@ -97,56 +43,26 @@ namespace IngameScript.drawing_framework.sprites {
 
         // Created in M$ Paint, converted to ascii art using https://www.ascii-art-generator.org/
         // and updated using Notepad++
-        public static MySprite SPRITE_SMILE_SAD = new MySprite(40, 15, new bool[] {
-            _,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,O,O,O,O,O,_,_,_,_,O,O,O,O,O,O,O,_,_,_,_,O,O,O,O,O,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,O,O,O,O,O,_,_,_,_,_,_,O,O,O,O,O,_,_,_,_,_,_,O,O,O,O,O,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,O,O,O,O,O,O,_,_,_,_,O,O,O,O,O,O,O,_,_,_,_,O,O,O,O,O,O,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,_,_,_,O,O,O,O,O,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,O,O,O,O,_,_,_,O,O,O,O,O,O,O,O,O,_,_,_,O,O,O,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,O,O,O,_,_,O,O,O,O,O,O,O,O,O,O,O,_,_,O,O,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_
-        });
-        public static MySprite SPRITE_SMILE_NEUTRAL = new MySprite(40, 15, new bool[] {
-            _,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,O,O,O,O,O,_,_,_,_,O,O,O,O,O,O,O,_,_,_,_,O,O,O,O,O,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,O,O,O,O,O,_,_,_,_,_,_,O,O,O,O,O,_,_,_,_,_,_,O,O,O,O,O,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,O,O,O,O,O,O,_,_,_,_,O,O,O,O,O,O,O,_,_,_,_,O,O,O,O,O,O,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,_,_,_,O,O,O,O,O,O,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,O,O,O,O,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_
-        });
-        public static MySprite SPRITE_SMILE_HAPPY = new MySprite(40, 15, new bool[] {
-            _,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,O,O,O,O,O,_,_,_,_,O,O,O,O,O,O,O,_,_,_,_,O,O,O,O,O,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,O,O,O,O,O,_,_,_,_,_,_,O,O,O,O,O,_,_,_,_,_,_,O,O,O,O,O,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,O,O,O,O,O,O,_,_,_,_,O,O,O,O,O,O,O,_,_,_,_,O,O,O,O,O,O,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,O,O,O,O,O,O,_,O,O,O,O,O,O,O,O,O,O,O,O,O,_,O,O,O,O,O,O,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,O,O,O,O,O,O,_,_,_,O,O,O,O,O,O,O,O,O,_,_,_,O,O,O,O,O,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,O,O,O,O,O,O,_,_,_,_,_,O,O,O,_,_,_,_,_,O,O,O,O,O,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,_,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,O,O,O,O,O,O,O,O,_,_,_,_,_,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,_,_,_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_,_,_,_,_,_,_,_,_,_,_,_,_,_,
-            _,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_
-        });
+        public static MySprite SPRITE_SMILE_SAD = new MySprite(40, 15, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
+            0,0,0x7f,0,0,0,0x07,0xc1,0xf0,0,0,0x1e,0,0x3c,0,0,
+            0x38,0,0x0e,0,0,0x61,0x81,0x83,0,0,0xc3,0xc3,0xc1,0x80,0x01,0x80,
+            0,0,0xc0,0x01,0x80,0,0,0xc0,0x01,0x80,0x7e,0,0xc0,0,0xc1,0x81,
+            0x81,0x80,0,0x62,0,0x43,0,0,0x38,0,0x0e,0,0,0x1e,0,0x3c,
+            0,0,0x07,0xc1,0xf0,0,0,0,0x7f,0,0
+        }));
+        public static MySprite SPRITE_SMILE_NEUTRAL = new MySprite(40, 15, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
+            0,0,0x7f,0,0,0,0x07,0xc1,0xf0,0,0,0x1e,0,0x3c,0,0,
+            0x38,0,0x0e,0,0,0x61,0x81,0x83,0,0,0xc3,0xc3,0xc1,0x80,0x01,0x80,
+            0,0,0xc0,0x01,0x80,0,0,0xc0,0x01,0x80,0,0,0xc0,0,0xc1,255,
+            0x81,0x80,0,0x60,0,0x03,0,0,0x38,0,0x0e,0,0,0x1e,0,0x3c,
+            0,0,0x07,0xc1,0xf0,0,0,0,0x7f,0,0
+        }));
+        public static MySprite SPRITE_SMILE_HAPPY = new MySprite(40, 15, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
+            0,0,0x7f,0,0,0,0x07,0xc1,0xf0,0,0,0x1e,0,0x3c,0,0,
+            0x38,0,0x0e,0,0,0x61,0x81,0x83,0,0,0xc3,0xc3,0xc1,0x80,0x01,0x80,
+            0,0,0xc0,0x01,0x80,0,0,0xc0,0x01,0x82,0,0x40,0xc0,0,0xc1,255,
+            0x81,0x80,0,0x60,0x7e,0x03,0,0,0x38,0,0x0e,0,0,0x1e,0,0x3c,
+            0,0,0x07,0xc1,0xf0,0,0,0,0x7f,0,0
+        }));
     }
 }

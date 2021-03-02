@@ -120,18 +120,18 @@ namespace IngameScript.drawing_framework {
 
          // Loop through the sprite's pixels and copy them to the screen buffer
             for (int spritePos = 0; spritePos < spriteLength; spritePos++) {
-             // Copy the value of the current pixel, after transforming it according to the given rules
                 try {
+                 // Copy the value of the current pixel, after transforming it according to the given rules
                     Buffer[screenPos] = TransformSourcePixelValue(sprite.data[spritePos], Buffer[screenPos], invertColors, transparentBackground);
+
+                 // Move the screen cursor to the next pixel on the screens
+                    screenPos++;
                 } catch (Exception exc) {
                     // If it's outside the screen, it will overflow and it will throw an exception which needs to be caught
                 }
 
-             // Move the screen cursor to the next pixel on the screens
-                screenPos++;
-
              // Don't draw content outside the screen
-                if (x + spritePosX >= resX - 1 || screenPos >= length - 1) {
+                if (screenPos >= length - 1) {
                     return;
                 }
 

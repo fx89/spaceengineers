@@ -13,7 +13,6 @@ namespace IngameScript {
 	    private const int PAGE_PADDING      =  3;
 	    private const int BOTTOM_ROW_HEIGHT = 17;
 	    private const int TITLE_LABEL_POS_Y =  4;
-        private const int N_BLINK_FRAMES = 3;
 
 	    private int resX, resY;
 
@@ -68,8 +67,7 @@ namespace IngameScript {
 
 	    private Dictionary<MyList, string> MenuTitlesDictionary = new Dictionary<MyList, string>();
 
-        private MyStatefulAnimatedSprite UpArrow, DownArrow, InArrow, OutArrow;
-        private int blinkCounterUp, blinkCounterDown, blinkCounterIn, blinkCounterOut;
+        private MyBlinkingIcon UpArrow, DownArrow, InArrow, OutArrow;
 
 	    public MyOsdMenu(string title, int resX, int resY) : base(null, 0, 0, true) {
 		    if (title == null) {
@@ -95,22 +93,16 @@ namespace IngameScript {
             int bottomIconsLeftMargin = resX / 2 - (StockSprites.SPRITE_UP.width * 2);
             int bottomIconsY = resY - BOTTOM_ROW_HEIGHT;
 
-            UpArrow   = InitArrowIcon(bottomIconsLeftMargin , bottomIconsY, StockSprites.SPRITE_UP);
-            DownArrow = InitArrowIcon(bottomIconsLeftMargin + StockSprites.SPRITE_UP.width, bottomIconsY, StockSprites.SPRITE_DOWN);
-            InArrow   = InitArrowIcon(bottomIconsLeftMargin + (StockSprites.SPRITE_UP.width * 2), bottomIconsY, StockSprites.SPRITE_UPDOWN);
-            OutArrow  = InitArrowIcon(bottomIconsLeftMargin + (StockSprites.SPRITE_UP.width * 3), bottomIconsY, StockSprites.SPRITE_REVERSE);
+            DownArrow = new MyBlinkingIcon(bottomIconsLeftMargin , bottomIconsY, StockSprites.SPRITE_DOWN);
+            UpArrow   = new MyBlinkingIcon(bottomIconsLeftMargin + StockSprites.SPRITE_UP.width , bottomIconsY, StockSprites.SPRITE_UP);
+            InArrow   = new MyBlinkingIcon(bottomIconsLeftMargin + (StockSprites.SPRITE_UP.width * 2), bottomIconsY, StockSprites.SPRITE_UPDOWN);
+            OutArrow  = new MyBlinkingIcon(bottomIconsLeftMargin + (StockSprites.SPRITE_UP.width * 3), bottomIconsY, StockSprites.SPRITE_REVERSE);
+
+            AddChild(UpArrow);
+            AddChild(DownArrow);
+            AddChild(InArrow);
+            AddChild(OutArrow);
 	    }
-
-        private MyStatefulAnimatedSprite InitArrowIcon(int x, int y, MySprite Sprite) {
-            MyStatefulAnimatedSprite ret = new MyStatefulAnimatedSprite(x, y)
-                .WithState("Off", new MyStatefulAnimatedSpriteState(new MySprite[]{Sprite}))
-                .WithState("On", new MyStatefulAnimatedSpriteState(new MySprite[]{new MySprite(Sprite.width, Sprite.height, DrawingFrameworkUtils.NegateBoolArray(Sprite.data))}))
-            ;
-
-            AddChild(ret);
-
-            return ret;
-        }
 
 	    /**
 	     * Tells the current menu or sub-menu to display just one item per page
@@ -206,8 +198,7 @@ namespace IngameScript {
 	    public void CursorUp() {
 		    if (isConstructed) {
 			    if (CurrentMenu != null) {
-				    UpArrow.SetState("On");
-				    blinkCounterUp = 0;
+				    UpArrow.Blink(3);
 				    CurrentOption = CurrentMenu.SelectPreviousItem();
 			    }
 		    } else {
@@ -218,8 +209,7 @@ namespace IngameScript {
 	    public void CursorDown() {
 		    if (isConstructed) {
 			    if (CurrentMenu != null) {
-				    DownArrow.SetState("On");
-				    blinkCounterDown = 0;
+				    DownArrow.Blink(3);
 				    CurrentOption = CurrentMenu.SelectNextItem();
 			    }
 		    } else {
@@ -229,8 +219,7 @@ namespace IngameScript {
 
 	    public void CursorIn() {
 		    if (isConstructed) {
-			    InArrow.SetState("On");
-			    blinkCounterIn = 0;
+			    InArrow.Blink(3);
 			    MyList Submenu = SubmenusDictionary.GetValueOrDefault(CurrentOption, null);
 			    if (Submenu == null) {
 				    Action AssignedAction = ActionsDictionary.GetValueOrDefault(CurrentOption, null);
@@ -252,8 +241,7 @@ namespace IngameScript {
 
 	    public void CursorOut() {
 		    if (isConstructed) {
-			    OutArrow.SetState("On");
-			    blinkCounterOut = 0;
+			    OutArrow.Blink(3);
 			    MyList ParentMenu = ParentMenusDictionary.GetValueOrDefault(CurrentMenu, null);
 			    if (ParentMenu != null) {
 				    CurrentMenu.isVisible = false;
@@ -269,41 +257,16 @@ namespace IngameScript {
 	    }
 
 	    protected override void Compute(MyCanvas TargetCanvas) {
-
+            // Nothing to do here
 	    }
 
 	    protected override void Draw(MyCanvas TargetCanvas) {
-         // TODO: maybe write a separate class to avoid repetition
-		    if (blinkCounterUp < N_BLINK_FRAMES) {
-			    blinkCounterUp++;
-		    } else if (blinkCounterUp == N_BLINK_FRAMES) {
-			    UpArrow.SetState("Off");
-			    blinkCounterUp++;
-		    }
-
-		    if (blinkCounterDown < N_BLINK_FRAMES) {
-			    blinkCounterDown++;
-		    } else if (blinkCounterDown == N_BLINK_FRAMES) {
-			    DownArrow.SetState("Off");
-			    blinkCounterDown++;
-		    }
-
-		    if (blinkCounterIn < N_BLINK_FRAMES) {
-			    blinkCounterIn++;
-		    } else if (blinkCounterUp == N_BLINK_FRAMES) {
-			    InArrow.SetState("Off");
-			    blinkCounterIn++;
-		    }
-
-		    if (blinkCounterOut < N_BLINK_FRAMES) {
-			    blinkCounterOut++;
-		    } else if (blinkCounterOut == N_BLINK_FRAMES) {
-			    InArrow.SetState("Off");
-			    blinkCounterOut++;
-		    }
+            // Nothing to do here
 	    }
 
 	    protected override void Init() {
+         // This is the first stage where the Canvas and its default font are available,
+         // making it possible to compute the text width so that it may be properly centered.
 		    SetTitle(MenuTitlesDictionary[CurrentMenu]);
 	    }
 

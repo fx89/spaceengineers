@@ -53,7 +53,7 @@ private const bool IS_SCREEN_MIRRORED_HORIZONTALLY = false;
 // The number of frames after which the POST page disappears
 private const int POST_PAGE_DURATION = 100;
 
-// Set to TRUE for black forground on white background
+// Set to TRUE for black foreground on white background
 // Set to FALSE for white foreground on black background
 // The white is actually the color that's set in the properties the text panel
 private const bool IS_OSD_MENU_INVERTED = true;

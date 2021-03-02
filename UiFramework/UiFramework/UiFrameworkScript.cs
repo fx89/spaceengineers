@@ -34,17 +34,17 @@ int currFrame = 0;
 /**
   * This is called from the constructor of the program.
   * It should be used for initializing the application.
-  *	  > adding pages
-  *	  > adding components to the pages
-  *	  > linking logic and animations
+  *      > adding pages
+  *      > adding components to the pages
+  *      > linking logic and animations
   */
 private void Init() {
     OnScreenApplication = UiFrameworkUtils.InitSingleScreenApplication(GridTerminalSystem, "Text Panel", 139, 93, false)
-		.WithDefaultPostPage((MyOnScreenApplication app) => {
-		 // The POST page should disappear after 100 frames
-			currFrame++;
-			return currFrame >= 100;
-		});
+        .WithDefaultPostPage((MyOnScreenApplication app) => {
+         // The POST page should disappear after 100 frames
+            currFrame++;
+            return currFrame >= 100;
+        });
 
     // TODO: Add more pages
 }
@@ -58,22 +58,22 @@ private void Init() {
 public static Program PROGRAM;
 
 public Program() {
-	// Set the update speed in milliseconds
-	Runtime.UpdateFrequency = UpdateFrequency.Update1;
+    // Set the update speed in milliseconds
+    Runtime.UpdateFrequency = UpdateFrequency.Update1;
 
-	// Get a reference to SELF, for debugging from other contexts
-	PROGRAM = this;
+    // Get a reference to SELF, for debugging from other contexts
+    PROGRAM = this;
 
-	// Initialize the script
-	Init();
+    // Initialize the script
+    Init();
 }
 
 public void Save() {
-	// There is no state to be saved
+    // There is no state to be saved
 }
 
 public void Main(string argument, UpdateType updateSource) {
-	OnScreenApplication.Cycle();
+    OnScreenApplication.Cycle();
 }
 
 }}

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace IngameScript.ui_framework {
     public class Constants {
         public const int
-            FLOATING_POSITION_TOP	 = 0,
+            FLOATING_POSITION_TOP    = 0,
             FLOATING_POSITION_LEFT   = 1,
             FLOATING_POSITION_RIGHT  = 2,
             FLOATING_POSITION_BOTTOM = 3;

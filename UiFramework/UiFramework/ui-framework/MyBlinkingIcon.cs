@@ -27,7 +27,7 @@ namespace IngameScript.ui_framework {
         private bool isBlinking = false;
         private int nBlinkTimes = 0;
 
-	    public MyBlinkingIcon(int x, int y, MySprite Graphics) : base(null, x, y, true) {
+        public MyBlinkingIcon(int x, int y, MySprite Graphics) : base(null, x, y, true) {
             Sprite = new MyStatefulAnimatedSprite(0, 0)
                 .WithState("Off", new MyStatefulAnimatedSpriteState(new MySprite[]{ Graphics }))
                 .WithState("On" , new MyStatefulAnimatedSpriteState(new MySprite[]{
@@ -41,17 +41,17 @@ namespace IngameScript.ui_framework {
             return this;
         }
 
-	    public override int GetWidth() {
-		    return Sprite.GetWidth();
-	    }
+        public override int GetWidth() {
+            return Sprite.GetWidth();
+        }
 
-	    public override int GetHeight() {
-		    return Sprite.GetHeight();
-	    }
+        public override int GetHeight() {
+            return Sprite.GetHeight();
+        }
 
-	    protected override void Init() {
-		    // Nothing to do here
-	    }
+        protected override void Init() {
+            // Nothing to do here
+        }
 
         private void LocalSwitchOn() {
             Sprite.SetState("On");

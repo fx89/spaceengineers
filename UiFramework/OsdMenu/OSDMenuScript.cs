@@ -9,7 +9,6 @@ using SpaceEngineers.Game.ModAPI.Ingame;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using VRage;
@@ -67,12 +66,12 @@ private const bool IS_OSD_MENU_INVERTED = true;
 //			 - CURSOR_DOWN - selects the next item in the list
 //			 - CURSOR_UP   - selects the previous item in the list
 //			 - CURSOR_IN   - activates the selected item, triggering
-//							 an action or navigating to the submenu,
+//							 an action or navigating to the sub-menu,
 //							 depending on how the OSD menu was initialized
 //			 - CURSOR_OUT  - goes back to the parent menu, but only if a
 //							 sub-menu is currently displayed
 //	 > These switch status blocks can be of any type as long as they ca be
-//	   turned on or off. It is preferrable that they are lighting blocks,
+//	   turned on or off. It is preferable that they are lighting blocks,
 //	   so that they may help identify script errors. If an error occurs,
 //	   the switch status block is not turned off automatically (because of
 //	   the crash) and, in the case of a lighting block, the light will remain

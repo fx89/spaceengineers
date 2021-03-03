@@ -44,8 +44,15 @@ private const string TEXT_PANEL_NAME = "VIDEOWALL_PANEL_2x2";
 //      TEXT PADDING = 0.0%
 //      ALIGNMENT    = LEFT
 //      FONT SIZE    = 0.190
-private const int RESOLUTION_WIDTH  = 139;
-private const int RESOLUTION_HEIGHT =  93;
+// The above parameters will be applied automatically to the target screen if the
+// AUTO_APPLY_SCREEN_PARAMETERS is set to true. The default parameters will work
+// well on a 1x1 display. For other types of text panels or for custom setup, such
+// as displaying the menu on only the top half of the panel because the bottom half
+// is covered by the console, the AUTO_APPLY_SCREEN_PARAMETERS parameter will have
+// to be set to false and the panel settings will have to be adjusted manually.
+private const bool AUTO_APPLY_SCREEN_PARAMETERS = true;
+private const int  RESOLUTION_WIDTH             = 139;
+private const int  RESOLUTION_HEIGHT            =  93;
 
 // Set this to TRUE in case you placed a transparent text panel the other way around
 private const bool IS_SCREEN_MIRRORED_HORIZONTALLY = false;
@@ -148,10 +155,22 @@ private MyOsdMenu InitOsdMenu() {
             OnScreenApplication.SwitchToPage(2);
          })
 
-      // Add a text option which switches the application back to the POST page,
-      // while also resetting the frame counter, so that the POST page stays on
-      // for another X frames
-        .WithTextOption("Back to POST page")
+      // Add another option to go back to the POST menu. This will be a rotating
+      // arrow pointing left, given by the frames SPRITE_BACK_ARROW_*, which are
+      // initialized in the CUSTOM SPRITES section. The POST menu is page 0, as
+      // it is the first page added to the application.
+        .WithIconOption(
+            "Back to POST page",
+            new MySprite[]{
+                SPRITE_BACK_ARROW_00,
+                SPRITE_BACK_ARROW_01,
+                SPRITE_BACK_ARROW_02,
+                SPRITE_BACK_ARROW_03,
+                SPRITE_BACK_ARROW_02,
+                SPRITE_BACK_ARROW_01
+            },
+            Constants.FLOATING_POSITION_TOP
+         )
             .WithAction(() => {
                 currFrame = 0;
                 OnScreenApplication.SwitchToPage(0);
@@ -161,7 +180,7 @@ private MyOsdMenu InitOsdMenu() {
             .WithAction(() => {
              // Find all the reactors and shut them down
                 GridTerminalSystem.GetBlocksOfType<IMyReactor>(null, (Reactor) => {
-                    Reactor.Enabled = true;
+                    Reactor.Enabled = false;
                 return false;});
             })
 
@@ -169,8 +188,12 @@ private MyOsdMenu InitOsdMenu() {
         .End();
 }
 
+
+
 // Movement vector for the smiley sprite defined below
 private int vecX = 2, vecY = -1;
+
+
 
 private void InitOtherStuff() {
  // Create the smiley face screen saver page and add it to the application
@@ -291,6 +314,134 @@ private static MySprite SPRITE_GRID = new MySprite(104, 37, DrawingFrameworkUtil
 0xf0
 }));
 
+private static MySprite SPRITE_BACK_ARROW_00 = new MySprite(104, 37, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[]{
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0x1f,0xf0,0,0,0,0,0,0,0,
+0,0,0,0,0x7f,0xe0,0,0,0,0,0,0,0,0,0,0,
+0,0x7f,0xf0,0,0,0,0,0,0,0,0,0,0,0x01,255,0xf0,
+0,0,0,0,0,0,0,0,0,0,0x03,0xf0,0xf0,0,0,0,
+0,0,0,0,0,0,0,0x07,0xe0,0x70,0,0,0,0,0,0,
+0,0,0,0,0x0f,0x80,0x7d,0xb6,0xdb,0x6d,0xb6,0xdb,0x68,0,0,0,
+0,0x1f,0,0x7f,255,255,255,255,255,0xfc,0,0,0,0,0x3e,0,
+0x7f,255,255,255,255,255,0xfc,0,0,0,0,0x7c,0,0,0,0,
+0,0,0,0x7c,0,0,0,0,0xf0,0,0,0,0,0,0,0,
+0x3c,0,0,0,0x01,0xe0,0,0,0,0,0,0,0,0x3c,0,0,
+0,0x03,0xc0,0,0,0,0,0,0,0,0x3c,0,0,0,0x07,0x80,
+0,0,0,0,0,0,0,0x3c,0,0,0,0x07,0x80,0,0,0,
+0,0,0,0,0x3c,0,0,0,0x07,0xc0,0,0,0,0,0,0,
+0,0x3c,0,0,0,0x03,0xe0,0,0,0,0,0,0,0,0x3c,0,
+0,0,0x01,0xf0,0,0,0,0,0,0,0,0x3c,0,0,0,0,
+0xf8,0,0,0,0,0,0,0,0x3c,0,0,0,0,0x3e,0,0x7f,
+255,255,255,255,255,0xf8,0,0,0,0,0x3f,0,0x7f,255,255,255,
+255,255,0xfc,0,0,0,0,0x0f,0x80,0x7f,255,255,255,255,255,0xfc,
+0,0,0,0,0x07,0xc0,0x70,0,0,0,0,0,0,0,0,0,
+0,0x03,0xf0,0x70,0,0,0,0,0,0,0,0,0,0,0x01,0xfd,
+0xf0,0,0,0,0,0,0,0,0,0,0,0,255,0xf0,0,0,
+0,0,0,0,0,0,0,0,0,0x7f,0xf0,0,0,0,0,0,
+0,0,0,0,0,0,0x3f,0xf0,0,0,0,0,0,0,0,0,
+0,0,0,0x1f,0xe0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0
+}));
+
+private static MySprite SPRITE_BACK_ARROW_01 = new MySprite(104, 37, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[]{
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0x05,0x50,0,0,0,0,0,0,0,0,0,0,
+0,0x1f,0xf0,0,0,0,0,0,0,0,0,0,0,0,0x3f,0xf0,
+0,0,0,0,0,0,0,0,0,0,0,255,0xf0,0,0,0,
+0,0,0,0,0,0,0,0x01,0xf8,0x70,0,0,0,0,0,0,
+0,0,0,0,0x03,0xe0,0x78,0,0,0,0,0,0,0,0,0,
+0,0x0f,0xc0,0x7f,255,255,255,255,255,0xf8,0,0,0,0,0x1f,0,
+0x7f,255,255,255,255,255,0xf8,0,0,0,0,0x7e,0,0x12,0x49,0x24,
+0x92,0x49,0x24,0xf8,0,0,0,0,0xf8,0,0,0,0,0,0,0,
+0x38,0,0,0,0x01,0xf0,0,0,0,0,0,0,0,0x38,0,0,
+0,0x07,0xc0,0,0,0,0,0,0,0,0x38,0,0,0,0x07,0x80,
+0,0,0,0,0,0,0,0x3c,0,0,0,0x07,0x80,0,0,0,
+0,0,0,0,0x3c,0,0,0,0x03,0xc0,0,0,0,0,0,0,
+0,0x3c,0,0,0,0x03,0xe0,0,0,0,0,0,0,0,0x1c,0,
+0,0,0x01,0xf0,0,0,0,0,0,0,0,0x3c,0,0,0,0,
+0x78,0,0,0,0,0,0,0,0x3e,0,0,0,0,0x7e,0,255,
+255,255,255,255,255,0xfc,0,0,0,0,0x1f,0,0x7f,255,255,255,
+255,255,0xfe,0,0,0,0,0x0f,0x80,255,255,255,255,255,255,0xfc,
+0,0,0,0,0x07,0xe0,0xf0,0,0,0,0,0,0,0,0,0,
+0,0x03,0xf0,0xe0,0,0,0,0,0,0,0,0,0,0,0x01,255,
+0xe0,0,0,0,0,0,0,0,0,0,0,0,255,0xe0,0,0,
+0,0,0,0,0,0,0,0,0,0x7f,0xe0,0,0,0,0,0,
+0,0,0,0,0,0,0x3f,0xe0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0
+}));
+
+private static MySprite SPRITE_BACK_ARROW_02 = new MySprite(104, 37, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[]{
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x05,
+0xf0,0,0,0,0,0,0,0,0,0,0,0,0xbe,0xf8,0,0,
+0,0,0,0,0,0,0,0,0x0b,0xe0,0x7f,255,255,255,255,255,
+0xf0,0,0,0,0,0x7f,0,0,0,0,0,0,0,0xf8,0,0,
+0,0x07,0xf0,0,0,0,0,0,0,0,0x3c,0,0,0,0x07,0xc0,
+0,0,0,0,0,0,0,0x3c,0,0,0,0x07,0x80,0,0,0,
+0,0,0,0,0x1e,0,0,0,0x07,0xe0,0,0,0,0,0,0,
+0,0x1e,0,0,0,0x03,0xf8,0,0,0,0,0,0,0,0x3f,0,
+0,0,0,0x7f,0,255,255,255,255,255,255,255,0,0,0,0,
+0x1f,0xc1,0xf5,0x55,0x55,0x55,0x55,0x55,0x54,0,0,0,0,0x07,255,0xe0,
+0,0,0,0,0,0,0,0,0,0,0x01,255,0xe0,0,0,0,
+0,0,0,0,0,0,0,0,0x04,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0
+}));
+
+private static MySprite SPRITE_BACK_ARROW_03 = new MySprite(104, 37, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[]{
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0x0a,0,0,0,0x07,0xa0,
+0,0,0,0,0,0,0,0x3e,0,0,0,0x07,255,255,255,255,
+255,255,255,255,255,0,0,0,0x02,0xaa,0,0,0,0,0,0,
+0,0x1e,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0
+}));
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -305,6 +456,22 @@ private static MySprite SPRITE_GRID = new MySprite(104, 37, DrawingFrameworkUtil
     *      > linking logic and animations
     */
 private void Init() {
+ // Get a reference to the target panel or crash
+    IMyTerminalBlock TextPanel = GridTerminalSystem.GetBlockWithName(TEXT_PANEL_NAME);
+    if (TextPanel == null || !(TextPanel is IMyTextPanel)) {
+        throw new ArgumentException("Could not find a text panel named [" + TEXT_PANEL_NAME + "]");
+   }
+
+ // Apply the settings if so configured
+    if (AUTO_APPLY_SCREEN_PARAMETERS) {
+        IMyTextPanel TPanel = (IMyTextPanel) TextPanel;
+        TPanel.ContentType = ContentType.TEXT_AND_IMAGE;
+        TPanel.SetValue<long>("Font", 1147350002);
+        TPanel.TextPadding = 0;
+        TPanel.Alignment = TextAlignment.LEFT;
+        TPanel.FontSize = 0.190f;
+    }
+
  // Initialize the application, giving it a canvass and one or more screens to display it on.
  // Also add the default POST page to the application. The default POST page is an optional
  // built-in page which can be included by calling the WithDefaultPostPage() method.

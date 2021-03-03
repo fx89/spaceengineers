@@ -13,25 +13,25 @@ namespace IngameScript.drawing_framework.sprites {
              0x02,0,0x1a,0xc0,0x22,0x20,0x22,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x1f,0xc0,0,0
         }));
 
-        public static MySprite SPRITE_UP = new MySprite(16, 10, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
+        public static MySprite SPRITE_UP = DrawingFrameworkUtils.ResizeSpriteCanvas(new MySprite(16, 10, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
              0,0,0,0,0x02,0,0x07,0,0x0f,0x80,0x1f,0xc0,0x3f,0xe0,0x3f,0xe0,0x3f,0xe0,0,0
-        }));
+        })), 14, 10, 0, 0);
 
-        public static MySprite SPRITE_DOWN = new MySprite(16, 10, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
+        public static MySprite SPRITE_DOWN = DrawingFrameworkUtils.ResizeSpriteCanvas(new MySprite(16, 10, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
              0,0,0,0,0x3f,0xe0,0x3f,0xe0,0x3f,0xe0,0x1f,0xc0,0x0f,0x80,0x07,0,0x02,0,0,0
-        }));
+        })), 14, 10, 0, 0);
 
-        public static MySprite SPRITE_LEFTRIGHT = new MySprite(16, 10, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
+        public static MySprite SPRITE_LEFTRIGHT = DrawingFrameworkUtils.ResizeSpriteCanvas(new MySprite(16, 10, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
             0,0,0,0,0x0d,0x80,0x1d,0xc0,0x3d,0xe0,0x7d,0xf0,0x3d,0xe0,0x1d,0xc0,0x0d,0x80,0,0
-        }));
+        })), 14, 10, 0, 0);
 
-        public static MySprite SPRITE_UPDOWN = new MySprite(16, 10, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
+        public static MySprite SPRITE_UPDOWN = DrawingFrameworkUtils.ResizeSpriteCanvas(new MySprite(16, 10, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
             0,0,0x02,0,0x07,0,0x0f,0x80,0x1f,0xc0,0,0,0x1f,0xc0,0x0f,0x80,0x07,0,0x02,0
-        }));
+        })), 14, 10, 0, 0);
 
-        public static MySprite SPRITE_REVERSE = new MySprite(16, 10, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
+        public static MySprite SPRITE_REVERSE = DrawingFrameworkUtils.ResizeSpriteCanvas(new MySprite(16, 10, DrawingFrameworkUtils.ByteArrayToBoolArray(new byte[] {
             0,0,0,0,0x0f,0xe0,0x10,0x10,0x7c,0x10,0x38,0x10,0x10,0x10,0,0x10,0x10,0x10,0x0f,0xe0
-        }));
+        })), 14, 10, 0, 0);
 
         public static MySprite SCROLLBAR_SLIDER = new MySprite(5, 5, new bool[] {
             _,O,O,O,_,

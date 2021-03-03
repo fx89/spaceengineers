@@ -45,5 +45,42 @@ namespace IngameScript.drawing_framework {
 
             return ret;
         }
+
+        public static MySprite ResizeSpriteCanvas(MySprite Sprite, int newWidth, int newHeight) {
+            return ResizeSpriteCanvas(Sprite, newWidth, newHeight, DrawingFrameworkConstants.HORIZONTAL_ALIGN_CENTER, DrawingFrameworkConstants.VERTICAL_ALIGN_MIDDLE);
+        }
+
+        public static MySprite ResizeSpriteCanvas(MySprite Sprite, int newWidth, int newHeight, int horizontalAlignment, int verticalAlignment) {
+         // Garbage in, garbage out
+            if (Sprite == null || newWidth < 1 || newHeight < 1) {
+                return null;
+            }
+
+         // Create a new canvas to paint the original sprite to
+            MyCanvas NewCanvas = new MyCanvas(newWidth, newHeight);
+
+         // Compute the coordinates
+            int posX = ComputePos(Sprite.width, newWidth, horizontalAlignment);
+            int posY = ComputePos(Sprite.height, newHeight, verticalAlignment);
+
+         // Draw the sprite onto the canvas
+            NewCanvas.BitBlt(Sprite, posX, posY);
+
+         // Return a new sprite with the data of a new canvas
+            return new MySprite(newWidth, newHeight, NewCanvas.GetBuffer());
+        }
+
+        private static int ComputePos(int origSize, int newSize, int alignemnt) {
+         // Vertical alignment constants have the same values as horizontal alignment constants
+            if (alignemnt == DrawingFrameworkConstants.VERTICAL_ALIGN_MIDDLE) {
+                return (newSize - origSize) / 2;
+            }
+
+            if (alignemnt == DrawingFrameworkConstants.VERTICAL_ALIGN_BOTTOM) {
+                return newSize - 1 - origSize;
+            }
+
+            return 0;
+        }
     }
 }

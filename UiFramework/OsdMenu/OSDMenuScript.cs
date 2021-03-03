@@ -118,16 +118,16 @@ private MyOsdMenu InitOsdMenu() {
                         .WithTextOption("Turn on")
                             .WithAction(() => {
                              // Find all the lights and turn them on
-                                List<IMyLightingBlock> Lights = new List<IMyLightingBlock>();
-                                GridTerminalSystem.GetBlocksOfType<IMyLightingBlock>(Lights);
-                                foreach(IMyLightingBlock Light in Lights) { Light.Enabled = true; }
+                                GridTerminalSystem.GetBlocksOfType<IMyLightingBlock>(null, (Light) => {
+                                    Light.Enabled = true;
+                                return false;});
                             })
                         .WithTextOption("Turn off")
                             .WithAction(() => {
                              // Find all the lights and turn them off
-                                List<IMyLightingBlock> Lights = new List<IMyLightingBlock>();
-                                GridTerminalSystem.GetBlocksOfType<IMyLightingBlock>(Lights);
-                                foreach(IMyLightingBlock Light in Lights) { Light.Enabled = false; }
+                                GridTerminalSystem.GetBlocksOfType<IMyLightingBlock>(null, (Light) => {
+                                    Light.Enabled = false;
+                                return false;});
                             })
                     .EndSubMenu()
                 .WithTextOption("Sub option 2")
@@ -155,9 +155,9 @@ private MyOsdMenu InitOsdMenu() {
         .WithIconOption("Shut down", new MySprite[]{SPRITE_SHUTDOWN}, Constants.FLOATING_POSITION_TOP)
             .WithAction(() => {
              // Find all the reactors and shut them down
-                List<IMyReactor> Reactors = new List<IMyReactor>();
-                GridTerminalSystem.GetBlocksOfType<IMyReactor>(Reactors);
-                foreach(IMyReactor Reactor in Reactors) { Reactor.Enabled = false; }
+                GridTerminalSystem.GetBlocksOfType<IMyReactor>(null, (Reactor) => {
+                    Reactor.Enabled = true;
+                return false;});
             })
 
       // End of the menu definition

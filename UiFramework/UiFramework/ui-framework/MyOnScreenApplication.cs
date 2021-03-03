@@ -131,11 +131,23 @@ namespace IngameScript.ui_framework {
             }
         }
 
+        public void SwitchToPage(MyPage Page) {
+            foreach (MyPage Pg in Pages) {
+                if (Pg == Page) {
+                    CurrentPage = Pg;
+                }
+            }
+        }
+
         public void SwitchToPage(int pageNumber) {
             if (pageNumber < 0 || pageNumber >= Pages.Count) {
                 return;
             }
             CurrentPage = Pages[pageNumber];
+        }
+
+        public MyPage GetCurrentPage() {
+            return CurrentPage;
         }
 
         public void Cycle() {

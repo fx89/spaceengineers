@@ -137,7 +137,12 @@ private MyOsdMenu InitOsdMenu() {
       // Menu options may be set up to navigate to a different page
         .WithIconOption(
             "Smile Screen saver",
-            new MySprite[]{StockSprites.SPRITE_SMILE_HAPPY,StockSprites.SPRITE_SMILE_NEUTRAL,StockSprites.SPRITE_SMILE_SAD,StockSprites.SPRITE_SMILE_NEUTRAL }
+            new MySprite[]{
+                StockSprites.SPRITE_SMILE_HAPPY,
+                StockSprites.SPRITE_SMILE_NEUTRAL,
+                StockSprites.SPRITE_SMILE_SAD,
+                StockSprites.SPRITE_SMILE_NEUTRAL
+            }
             , Constants.FLOATING_POSITION_TOP
          ).WithAction(() => {
             OnScreenApplication.SwitchToPage(2);
@@ -162,7 +167,50 @@ private MyOsdMenu InitOsdMenu() {
 
       // End of the menu definition
         .End();
+}
 
+// Movement vector for the smiley sprite defined below
+private int vecX = 2, vecY = -1;
+
+private void InitOtherStuff() {
+ // Create the smiley face screen saver page and add it to the application
+    MyPage ScreensaverPage = new MyPage();
+    OnScreenApplication.AddPage(ScreensaverPage);
+
+ // Create the smiley sprite and add it to the screensaver page
+ // The sprite will have one state (named Default) with 4 frames
+ // The sprite will also have a client cycle method, which will
+ // move it around the screen
+    ScreensaverPage.AddChild(new MyStatefulAnimatedSprite(10, 15)
+        .WithState("Default", new MyStatefulAnimatedSpriteState(new MySprite[]{
+            StockSprites.SPRITE_SMILE_HAPPY,
+            StockSprites.SPRITE_SMILE_NEUTRAL,
+            StockSprites.SPRITE_SMILE_SAD,
+            StockSprites.SPRITE_SMILE_NEUTRAL
+        }))
+        .WithClientCycleMethod((MyOnScreenObject Sprt) => {
+         // Apply the movement vector to the sprite
+            Sprt.x += vecX;
+            Sprt.y += vecY;
+
+         // If the sprite has reached the left or right margin, then reverse the horizontal coordinate of the movement vector
+            if (Sprt.x <= 0 || Sprt.x + Sprt.GetWidth() >= RESOLUTION_WIDTH - 1) {
+                vecX = -vecX;
+            }
+
+         // If the sprite has reached the top margin, then reverse the vertical coordinate of the movement vector
+            if (Sprt.y <= 0 || Sprt.y + Sprt.GetHeight() >= RESOLUTION_HEIGHT - 1) {
+                vecY = -vecY;
+            }
+
+         // Go back to the OSD menu if the switch is turned one
+            MonitorSwitch(CURSOR_OUT_SWITCH_STATUS_BLOCK_NAME, () => {
+                if (OnScreenApplication.GetCurrentPage() == ScreensaverPage) {
+                    OnScreenApplication.SwitchToPage(1);
+                }
+            });
+        return 0;})
+    );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -285,6 +333,9 @@ private void Init() {
         MonitorSwitch(CURSOR_OUT_SWITCH_STATUS_BLOCK_NAME , () => { OsdMenu.CursorOut (); });
         return 1;
     });
+
+ // This is where other initialization, such as adding new pages, will happem
+    InitOtherStuff();
 }
 
 private void MonitorSwitch(String switchName, Action SwitchAction) {

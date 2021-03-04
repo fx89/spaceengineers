@@ -142,14 +142,14 @@ private MyOsdMenu InitOsdMenu() {
               // is positioned to the left of the text, which reads "Lights".
                 .WithIconOption("Lights", new MySprite[]{ SPRITE_LIGHTS }, Constants.FLOATING_POSITION_LEFT)
                     .WithSubMenu("> Lights <")
-                        .WithTextOption("Turn on")
+                        .WithTextOption("Turn On")
                             .WithAction(() => {
                              // Find all the lights and turn them on
                                 GridTerminalSystem.GetBlocksOfType<IMyLightingBlock>(null, (Light) => {
                                     Light.Enabled = true;
                                 return false;});
                             })
-                        .WithTextOption("Turn off")
+                        .WithTextOption("Turn Off")
                             .WithAction(() => {
                              // Find all the lights and turn them off
                                 GridTerminalSystem.GetBlocksOfType<IMyLightingBlock>(null, (Light) => {
@@ -157,8 +157,20 @@ private MyOsdMenu InitOsdMenu() {
                                 return false;});
                             })
                     .EndSubMenu()
-                .WithTextOption("Sub option 2")
-                .WithTextOption("Sub option 3")
+              // The above code is lengthy and makes it hard to follow the menu.
+              // To make it easier to follow, one can make use of the WithAggregatedOptions() method.
+              // The WithAggregatedOptions method allows grouping multiple repetitive actions, such as
+              // creating "Turn On" and "Turn Off" options and their similarly looking implementations.
+                .WithTextOption("Reactors").WithAggregatedOptions(CreateOnOffOptions<IMyReactor>(">Reactors<"))
+                .WithTextOption("Doors").WithAggregatedOptions(CreateOnOffOptions<IMyDoor>(">Doors<"))
+                .WithTextOption("Gravity").WithAggregatedOptions(CreateOnOffOptions<IMyGravityGenerator>(">Gravity<"))
+                .WithTextOption("Gyroscopes").WithAggregatedOptions(CreateOnOffOptions<IMyGyro>(">Gyroscopes<"))
+                .WithTextOption("Turrets").WithAggregatedOptions(CreateOnOffOptions<IMyLargeTurretBase>(">Turrets<"))
+                .WithTextOption("Jump drives").WithAggregatedOptions(CreateOnOffOptions<IMyJumpDrive>(">Jump drives<"))
+                .WithTextOption("Thrusters").WithAggregatedOptions(CreateOnOffOptions<IMyThrust>(">Thrusters<"))
+                .WithTextOption("Beacons").WithAggregatedOptions(CreateOnOffOptions<IMyBeacon>(">Beacons<"))
+                .WithTextOption("Rotors").WithAggregatedOptions(CreateOnOffOptions<IMyMotorRotor>(">Rotors<"))
+                .WithTextOption("Pistons").WithAggregatedOptions(CreateOnOffOptions<IMyPistonBase>(">Pistons<"))
             .EndSubMenu()
 
       // Menu options may be set up to navigate to a different page
@@ -208,6 +220,34 @@ private MyOsdMenu InitOsdMenu() {
         .End();
 }
 
+
+private Action<MyOsdMenu> CreateOnOffOptions<T>(String submenuTitle) {
+    return (MyOsdMenu Menu) => {
+        Menu
+            .WithSubMenu(submenuTitle)
+                .WithTextOption("Turn On")
+                    .WithAction(() => {
+                        List<IMyFunctionalBlock> Blocks = new List<IMyFunctionalBlock>();
+                        GridTerminalSystem.GetBlocksOfType<IMyFunctionalBlock>(Blocks);
+                        foreach (IMyFunctionalBlock Block in Blocks) {
+                            if (Block is T) {
+                                Block.Enabled = true;
+                            }
+                        }
+                    })
+                .WithTextOption("Turn Off")
+                    .WithAction(() => {
+                        List<IMyFunctionalBlock> Blocks = new List<IMyFunctionalBlock>();
+                        GridTerminalSystem.GetBlocksOfType<IMyFunctionalBlock>(Blocks);
+                        foreach (IMyFunctionalBlock Block in Blocks) {
+                            if (Block is T) {
+                                Block.Enabled = false;
+                            }
+                        }
+                    })
+            .EndSubMenu();
+    };
+}
 
 
 // Movement vector for the smiley sprite defined below
@@ -262,10 +302,27 @@ private void InitOtherStuff() {
 
 // CUSTOM SPRITES //////////////////////////////////////////////////////////////////////////////////////////////////
 
+// This is required for defining the SPRITE_LIGHTS below
 private const bool _ = false, O = true;
 
 
+// This is a copy of a stock sprite, except its colors are inverted.
+// The constructor takes 3 parameters: the width, the height and the data.
+// The width and the height are copied over rom SPRITE_PWR.
+// The data (which is an array of booleans) is first inverted by using the utility method NegateBoolArray()
+MySprite SPRITE_PWR_ON = new MySprite(
+    StockSprites.SPRITE_PWR.width,
+    StockSprites.SPRITE_PWR.height,
+    DrawingFrameworkUtils.NegateBoolArray(StockSprites.SPRITE_PWR.data)
+);
 
+
+
+// The following sprites will be initialized inside the InitSprites[1-4]() methods.
+// This is necessary to avoid the "script too complex" error raised by the game if
+// the script executes too many operations in one single loop. These operations are
+// part of the for loops that have to do with parsing the bytes given below and
+// turning them into boolean arrays.
 private static MySprite SPRITE_SHUTDOWN;
 private static MySprite SPRITE_LIGHTS;
 private static MySprite SPRITE_GRID_00, SPRITE_GRID_01, SPRITE_GRID_02, SPRITE_GRID_03, SPRITE_GRID_04, SPRITE_GRID_05, SPRITE_GRID_06, SPRITE_GRID_07, SPRITE_GRID_08;
@@ -326,7 +383,7 @@ _,_,O,O,O,O,O,_,_,
 _,_,_,O,O,O,_,_,_,
 _,_,_,_,_,_,_,_,_,
 _,_,_,O,O,O,_,_,_,
-_,_,_,O,O,O,_,_,_
+_,_,_,_,O,_,_,_,_
 });
 // The above method makes the script longer than it has to. For small icons,
 // this is ok, but larger ones might make the script exceed 100 000 characters,

@@ -152,6 +152,14 @@ namespace IngameScript {
             return this;
         }
 
+        public MyOsdMenu WithAggregatedOptions(Action<MyOsdMenu> Act) {
+            if (Act != null) {
+                Act(this);
+            }
+
+            return this;
+        }
+
         public MyOsdMenu WithAction(Action action) {
             ActionsDictionary[CurrentOption] = action;
             return this;
@@ -283,7 +291,7 @@ namespace IngameScript {
                 PAGE_PADDING,
                 TITLE_ROW_HEIGHT,
                 resX - (PAGE_PADDING * 2),
-                resY - PAGE_PADDING - TITLE_ROW_HEIGHT - BOTTOM_ROW_HEIGHT
+                resY - PAGE_PADDING - TITLE_ROW_HEIGHT - BOTTOM_ROW_HEIGHT + 2
             );
 
             ret.isVisible = false;

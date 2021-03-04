@@ -15,7 +15,14 @@ namespace IngameScript.ui_framework {
         public int x;
         public int y;
         public bool isVisible = true;
-        public bool invertColors = false;
+
+     // The invertColors property needs to apply to all children
+        private bool _invertColors = false;
+        public bool invertColors {
+            get { return _invertColors; }
+            set { _invertColors = value; foreach(MyOnScreenObject Child in ChildObjects) { Child.invertColors = value; } }
+        }
+
         public MyOnScreenObject ParentObject;
         public List<MyOnScreenObject> ChildObjects = new List<MyOnScreenObject>();
         private Func<MyOnScreenObject, int> ClientCycleMethod;

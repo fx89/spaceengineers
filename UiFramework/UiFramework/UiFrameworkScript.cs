@@ -32,13 +32,33 @@ private MyOnScreenApplication OnScreenApplication;
 int currFrame = 0;
 
 /**
-  * This is called from the constructor of the program.
+ * The InitSprites[1-4]() methods are called from the first 4 loops,
+ * each loop calling one method. This helps spread the workload of
+ * loading sprites across multiple initialization steps, to avoid
+ * "script too complex" erros.
+ */
+private void InitSprites1() {
+    
+}
+private void InitSprites2() {
+
+}
+private void InitSprites3() {
+
+}
+private void InitSprites4() {
+
+}
+
+
+/**
+  * This is called from the 5th loop
   * It should be used for initializing the application.
   *      > adding pages
   *      > adding components to the pages
   *      > linking logic and animations
   */
-private void Init() {
+private void InitApplication() {
     OnScreenApplication = UiFrameworkUtils.InitSingleScreenApplication(GridTerminalSystem, "Text Panel", 139, 93, false)
         .WithDefaultPostPage((MyOnScreenApplication app) => {
          // The POST page should disappear after 100 frames
@@ -63,17 +83,27 @@ public Program() {
 
     // Get a reference to SELF, for debugging from other contexts
     PROGRAM = this;
-
-    // Initialize the script
-    Init();
 }
 
 public void Save() {
     // There is no state to be saved
 }
 
+private int initStepNbr = 0;
+
 public void Main(string argument, UpdateType updateSource) {
-    OnScreenApplication.Cycle();
+ // Initialize the script. Do it in many steps, to avoid "script too complex" errors
+ // caused by loading too many pictures in one single frame.
+    if (initStepNbr < 5) {
+        initStepNbr++;
+        if (initStepNbr == 1) InitSprites1();
+        if (initStepNbr == 2) InitSprites2();
+        if (initStepNbr == 3) InitSprites3();
+        if (initStepNbr == 4) InitSprites4();
+        if (initStepNbr == 5) InitApplication();
+    } else {
+        OnScreenApplication.Cycle();
+    }
 }
 
 }}

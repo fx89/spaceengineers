@@ -118,8 +118,8 @@ namespace IngameScript.ui_framework {
 
          // Compute the vertical positions of the icon and label
             if (floatingIconPosition == Constants.FLOATING_POSITION_LEFT || floatingIconPosition == Constants.FLOATING_POSITION_RIGHT) {
-                TextLabel.y = (spriteHeight - textHeight) / 2;
-                AnimatedSprite.y = (textHeight - spriteHeight) / 2;
+                TextLabel.y = (height - textHeight) / 2;
+                AnimatedSprite.y = (height - spriteHeight) / 2;
             } else if (floatingIconPosition == Constants.FLOATING_POSITION_TOP) {
                 AnimatedSprite.y = 0;
                 TextLabel.y = spriteHeight + spacing;

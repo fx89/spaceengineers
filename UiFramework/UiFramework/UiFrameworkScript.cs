@@ -75,7 +75,7 @@ private void InitApplication() {
 
 // MAIN ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-public static Program PROGRAM;
+public static MyGridProgram PROGRAM;
 
 public Program() {
     // Set the update speed in milliseconds

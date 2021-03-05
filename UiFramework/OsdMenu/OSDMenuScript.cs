@@ -32,6 +32,36 @@ namespace IngameScript { partial class Program : MyGridProgram {
 
 
 
+/* README //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+This script creates a retro-looking menu that can display monochrome low resolution animated graphics within a
+scrollable list. List options can take the form of icons, text labels or text labels with icons and they can be
+set to activate sub-menus or to perform custom actions. Interaction with the menu is achieved by altering the
+"Enabled" state of 4 blocks which support this property (i.e. lighting blocks, reactors, jump drives, etc).
+
+NOTE: This script is meant as an example to explain how the OSD menu can be configured. Users may remove the current
+      configuration and add their own configuration in its place.
+
+To modify the menu to suit your needs, please update the configuration in the following sections:
+    - CONFIG section          = sets the target text panel, display resolution and other display properties,
+                                as well as the names of the blocks to be used as switches for navigating the menu
+    - OSD MENU INITIALIZATION = defines the structure of the menu and custom code to be run when activating options
+    - CUSTOM SPRITES section  = defines boolean arrays to be used as icons in the menu
+
+For a working example, please visit the following workshop item:
+    https://steamcommunity.com/sharedfiles/filedetails/?id=2415572447
+
+This is a showcase of the UI Framework, which enables low resolution graphics on text panels by dumping the frame
+buffer into a string, which is then set as the text property of a given text panel, which is set up to use the
+Monospace font and very small font size. The UI framework is minified in this script. The development version can be
+found here: https://github.com/fx89/spaceengineers/tree/main/UiFramework/UiFramework
+
+Development and partial building is done using MDK-SE: https://github.com/malware-dev/MDK-SE
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+
+
 // CONFIG //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // The name of the text panel where the OSD menu will be displayed
@@ -44,7 +74,7 @@ private const string TEXT_PANEL_NAME = "VIDEOWALL_PANEL_2x2";
 //      TEXT PADDING = 0.0%
 //      ALIGNMENT    = LEFT
 //      FONT SIZE    = 0.190
-// The above parameters will be applied automatically to the target screen if the
+// The above parameters will be applied automatically to the target text panel if the
 // AUTO_APPLY_SCREEN_PARAMETERS is set to true. The default parameters will work
 // well on a 1x1 display. For other types of text panels or for custom setup, such
 // as displaying the menu on only the top half of the panel because the bottom half
@@ -220,7 +250,11 @@ private MyOsdMenu InitOsdMenu() {
         .End();
 }
 
-
+/**
+ * This method creates a lambda which adds a submenu with the "Turn On"
+ * and "Turn Off" options to the selected menu option. These options apply
+ * to all functional blocks of the given type (T).
+ */
 private Action<MyOsdMenu> CreateOnOffOptions<T>(String submenuTitle) {
     return (MyOsdMenu Menu) => {
         Menu
@@ -332,9 +366,9 @@ private static MySprite SPRITE_BACK_ARROW_00, SPRITE_BACK_ARROW_01, SPRITE_BACK_
 
 /**
  * The InitSprites[1-4]() methods are called from the first 4 loops,
- * each loop calling one method. This helps spread the workload of
- * loading sprites across multiple initialization steps, to avoid
- * "script too complex" erros.
+ * each loop calling one method at a time. This helps spread the
+ * workload of loading sprites across multiple initialization steps,
+ * to avoid "Script too Complex" errors.
  */
 private void InitSprites1() {
 // Sprites, especially larger ones, should be drawn using graphics software. Then they can be converted using any tool

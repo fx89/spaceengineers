@@ -51,13 +51,13 @@ To configure the script, please edit the following sections:
 
 
 
-For a working example, please visit the following workshop item:
-    https://steamcommunity.com/sharedfiles/filedetails/?id=2415572447
-
 This is a showcase of the UI Framework, which enables low resolution graphics on text panels by dumping the frame
 buffer into a string, which is then set as the text property of a given text panel, which is set up to use the
 Monospace font and very small font size. The UI framework is minified in this script. The development version can be
 found here: https://github.com/fx89/spaceengineers/tree/main/UiFramework/UiFramework
+
+For a working example, please visit the following workshop item:
+    https://steamcommunity.com/sharedfiles/filedetails/?id=2415572447
 
 Development and partial building is done using MDK-SE: https://github.com/malware-dev/MDK-SE
 

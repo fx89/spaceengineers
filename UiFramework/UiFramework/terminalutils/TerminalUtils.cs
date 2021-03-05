@@ -1,9 +1,11 @@
 ﻿using Sandbox.ModAPI.Ingame;
+using Sandbox.ModAPI.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VRage.Game.GUI.TextPanel;
 
 namespace IngameScript.terminal_utils {
     public class TerminalUtils {
@@ -27,6 +29,25 @@ namespace IngameScript.terminal_utils {
                 return (T)block;
             }
             return default(T);
+        }
+
+        public static void SetupTextPanelForMatrixDisplay(
+            IMyGridTerminalSystem GridTerminalSystem,
+            string textPanelName,
+            float fontSize
+        ) {
+            // Get the text panel
+               IMyTextPanel TextPanel = TerminalUtils.FindFirstBlockWithName<IMyTextPanel>(GridTerminalSystem, textPanelName);
+               if (TextPanel == null) {
+                   throw new ArgumentException("Cannot find a text panel named [" + textPanelName + "]");
+               }
+
+            // Set up the text panel
+               TextPanel.ContentType = ContentType.TEXT_AND_IMAGE;
+               TextPanel.FontSize = fontSize;
+               TextPanel.TextPadding = 0;
+               TextPanel.SetValue<long>("Font", 1147350002);
+               TextPanel.Alignment = TextAlignment.LEFT;
         }
     }
 }

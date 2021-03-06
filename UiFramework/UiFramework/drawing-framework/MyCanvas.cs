@@ -275,10 +275,8 @@ namespace IngameScript.drawing_framework {
         }
 
         public void SetPixel(int x, int y, bool color) {
-            int pos = y * resX + x;
-
-            if (pos >= 0 && pos < length) {
-                Buffer[pos] = color;
+            if (x >= 0 && x < resX - 1 && y >= 0 && y < resY - 1) {
+                Buffer[y * resX + x] = color;
             }
         }
     }

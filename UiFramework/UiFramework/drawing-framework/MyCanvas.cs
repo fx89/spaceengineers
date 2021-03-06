@@ -247,8 +247,39 @@ namespace IngameScript.drawing_framework {
                 screenPos += resX;
                 screenPosY++;
             }
+        }
 
+        public void DrawLine(int x1, int y1, int x2, int y2, bool color) {
 
+         // Vertical lines are handled separately as they break down the algorythm
+            if (x1 == x2) {
+                int incY = y1 < y2 ? 1 : -1;
+                for (int y = y1 ; y != y2 ; y += incY) {
+                    SetPixel(x1, y, color);
+                }
+            } else {
+             // Compute the linear function:
+             // a*x1 + b = y1 => b = y1 - (a*x1) | => | a = (y2 - y1) / (x2 - x1)
+             // a*x2 + b = y2 => b = y2 - (a*x2) |    | b = y2 - (a*x2)
+                float a = (float)(y2 - y1) / (float)(x2 - x1);
+                float b = ((float)y2 - (a * x2));
+
+             // Draw the line
+                int incX = x1 <= x2 ? 1 : -1;
+                for (int x = x1 ; x != x2 ; x += incX) {
+                    int y = (int)((a * x) + b);
+                    SetPixel(x, y, color);
+                }
+            }
+            
+        }
+
+        public void SetPixel(int x, int y, bool color) {
+            int pos = y * resX + x;
+
+            if (pos >= 0 && pos < length) {
+                Buffer[pos] = color;
+            }
         }
     }
 

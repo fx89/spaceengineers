@@ -35,7 +35,7 @@ int currFrame = 0;
  * The InitSprites[1-4]() methods are called from the first 4 loops,
  * each loop calling one method. This helps spread the workload of
  * loading sprites across multiple initialization steps, to avoid
- * "script too complex" erros.
+ * "script too complex" errors.
  */
 private void InitSprites1() {
     

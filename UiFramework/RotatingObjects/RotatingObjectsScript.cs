@@ -53,21 +53,20 @@ private const int POST_SCREEN_DURATION = 10;
 
 // Distance of the rendered object from the view
 //    --- increase this if you get the "Script too Complex" error while rendering
-private const double MODEL_DISTANCE_FROM_VIEW = 2;
+private const double MODEL_DISTANCE_FROM_VIEW = 1.7d;
 
 // Set this to true to re-compute the object's center after loading
 private static bool RECENTER_OBJECT_AFTER_LOADING = true;
 
 // Rotation angles in radians (how much should the object turn each frame)
-private const double ROT_SPEED_RAD_YAW   = 0.10d;
-private const double ROT_SPEED_RAD_PITCH = 0.05d;
-private const double ROT_SPEED_RAD_ROLL  = 0.00d;
+private const double ROT_SPEED_RAD_YAW   = 0.015d;
+private const double ROT_SPEED_RAD_PITCH = 0.000d;
+private const double ROT_SPEED_RAD_ROLL  = 0.000d;
 
 // Initial rotation angles in radians
 private const double INITIAL_ROTATION_RAD_YAW   = 0.00d;
-private const double INITIAL_ROTATION_RAD_PITCH = 1.65d;
+private const double INITIAL_ROTATION_RAD_PITCH = Math.PI;
 private const double INITIAL_ROTATION_RAD_ROLL  = 0.00d;
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1048,8 +1047,8 @@ private class MySimple3DObject {
     }
 
     private double ComputeCorrection(double lowVal, double highVal) {
-        double halfPoint = (highVal - lowVal) / 2;
-        return halfPoint - highVal;
+        double halfPoint = (highVal - lowVal) / 2d;
+        return -(lowVal + halfPoint);
     }
 }
 

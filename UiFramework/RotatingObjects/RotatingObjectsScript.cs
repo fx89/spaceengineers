@@ -63,6 +63,12 @@ private const double ROT_SPEED_RAD_YAW   = 0.10d;
 private const double ROT_SPEED_RAD_PITCH = 0.05d;
 private const double ROT_SPEED_RAD_ROLL  = 0.00d;
 
+// Initial rotation angles in radians
+private const double INITIAL_ROTATION_RAD_YAW   = 0.00d;
+private const double INITIAL_ROTATION_RAD_PITCH = 1.65d;
+private const double INITIAL_ROTATION_RAD_ROLL  = 0.00d;
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -308,6 +314,8 @@ private void InitSprites5() {
     if (RECENTER_OBJECT_AFTER_LOADING) {
         Obj3D.Recenter();
     }
+
+    Obj3D.Rotate(INITIAL_ROTATION_RAD_YAW, INITIAL_ROTATION_RAD_PITCH, INITIAL_ROTATION_RAD_ROLL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

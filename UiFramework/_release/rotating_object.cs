@@ -18,15 +18,21 @@ private const int POST_SCREEN_DURATION = 10;
 
 // Distance of the rendered object from the view
 //    --- increase this if you get the "Script too Complex" error while rendering
-private const double MODEL_DISTANCE_FROM_VIEW = 6;
+private const double MODEL_DISTANCE_FROM_VIEW = 4;
 
 // Set this to true to re-compute the object's center after loading
 private static bool RECENTER_OBJECT_AFTER_LOADING = true;
 
 // Rotation angles in radians (how much should the object turn each frame)
-private const double ROT_SPEED_RAD_YAW   = 0.10d;
-private const double ROT_SPEED_RAD_PITCH = 0.00d;
-private const double ROT_SPEED_RAD_ROLL  = 0.01d;
+private const double ROT_SPEED_RAD_YAW   = 0.00d;
+private const double ROT_SPEED_RAD_PITCH = 0.01d;
+private const double ROT_SPEED_RAD_ROLL  = 0.05d;
+
+// Initial rotation angles in radians
+private const double INITIAL_ROTATION_RAD_YAW   = 0.00d;
+private const double INITIAL_ROTATION_RAD_PITCH = 1.65d;
+private const double INITIAL_ROTATION_RAD_ROLL  = 0.00d;
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -273,6 +279,8 @@ private void InitSprites5() {
     if (RECENTER_OBJECT_AFTER_LOADING) {
         Obj3D.Recenter();
     }
+
+    Obj3D.Rotate(INITIAL_ROTATION_RAD_YAW, INITIAL_ROTATION_RAD_PITCH, INITIAL_ROTATION_RAD_ROLL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

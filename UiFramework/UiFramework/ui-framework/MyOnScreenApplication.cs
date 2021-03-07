@@ -16,6 +16,8 @@ namespace IngameScript.ui_framework {
         private List<MyPage> Pages = new List<MyPage>();
         private MyPage CurrentPage;
         private MyCanvas Canvas;
+        private bool autoClearScreen = true;
+        private bool autoFlushBuffer = true;
 
      // When rendering on higher resolutions, the compilation of the string
      // to be displayed on-screen involves more operations than the maximum
@@ -123,6 +125,27 @@ namespace IngameScript.ui_framework {
             return this;
         }
 
+        /**
+         * By default, the application clears the buffer of the canvas before
+         * drawing frames. This option makes it stop doing that, so that the
+         * buffer may be cleared explicitly, when appropriate.
+         */
+        public MyOnScreenApplication WithoutAutomaticClear() {
+            autoClearScreen = false;
+            return this;
+        }
+
+        /**
+         * By default, the application flushes the buffer of the canvas onto
+         * the target screen after each drawing cycle. This option makes it
+         * stop doing that, so that the target screen may be updated explicitly,
+         * when appropriate.
+         */
+        public MyOnScreenApplication WithoutAutomaticFlush() {
+            autoFlushBuffer = false;
+            return this;
+        }
+
         public void AddPage(MyPage Page) {
             Pages.Add(Page);
             Page.SetApplication(this);
@@ -153,10 +176,14 @@ namespace IngameScript.ui_framework {
         public void Cycle() {
             // Process the current iteration
             if (currIteration == 0) {
-                Canvas.Clear();
+                if (autoClearScreen) {
+                    Canvas.Clear();
+                }
                 CurrentPage.Cycle(Canvas);
             } else {
-                TargetScreens[currIteration - 1].FlushBufferToScreen(CurrentPage.invertColors);
+                if (autoFlushBuffer) {
+                    TargetScreens[currIteration - 1].FlushBufferToScreen(CurrentPage.invertColors);
+                }
             }
 
             // Go to the next iteration
@@ -168,6 +195,10 @@ namespace IngameScript.ui_framework {
 
         public MyCanvas GetCanvas() { 
             return Canvas;
+        }
+
+        public List<MyScreen> GetTargetScreens() {
+            return TargetScreens;
         }
     }
 }

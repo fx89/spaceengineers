@@ -41,10 +41,24 @@ namespace IngameScript { partial class Program : MyGridProgram {
 
 // CONFIGURATION ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Name of the 1x1 LCD panel to which the view should draw
 private const string TARGET_LCD_PANEL_NAME = "3D_RENDERING_SCREEN";
+
+// false = white foreground on black background
+// true  = black foreground on white background
 private static bool INVERT_COLORS = false;
+
+// For how many frames should the script display the "INITIALIZING" message on screen
 private const int POST_SCREEN_DURATION = 10;
-private const double MODEL_DISTANCE_FROM_VIEW = 2;
+
+// Distance of the rendered object from the view
+//    --- increase this if you get the "Script too Complex" error while rendering
+private const double MODEL_DISTANCE_FROM_VIEW = 7;
+
+// Rotation angles in radians (how much should the object turn each frame)
+private const double ROT_SPEED_RAD_YAW   = 0.10d;
+private const double ROT_SPEED_RAD_PITCH = 0.05d;
+private const double ROT_SPEED_RAD_ROLL  = 0.02d;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -57,14 +71,20 @@ private const double MODEL_DISTANCE_FROM_VIEW = 2;
 // and parse. For more information on the Wavefront OBJ format, please visit this link:
 //          https://en.wikipedia.org/wiki/Wavefront_.obj_file
 
-/**
- * The InitSprites[1-4]() methods are called from the first 4 loops,
- * each loop calling one method. This helps spread the workload of
- * loading sprites across multiple initialization steps, to avoid
- * "script too complex" errors.
- */
 private void InitSprites1() {
-ObjFileLines = @"
+
+// IMPORTANT NOTE:
+// ========================================================
+// Make sure that none of the lines has leading spaces. The
+// parser does not handle leading spaces to avoid running
+// into the "Script too Complex" error.
+//
+ObjFileLines
+
+
+
+// INSERT OBJ FILE HERE /////////////////////////////////////////////
+= @"
 v 0.981880 2.549078 -3.896440
 v 0.981880 1.421911 -3.896440
 v 1.026716 2.591203 -1.997988
@@ -627,12 +647,36 @@ f 164/181/277 45/180/277 105/6/277 281/5/277
 f 80/327/278 282/1/278 79/4/278 3/269/278
 f 1/285/279 83/336/279 282/1/279 80/327/279
 f 83/336/280 5/329/280 82/2/280 282/1/280
-".Split('\n');
+"
+// END OF OBJ FILE //////////////////////////////////////////////////
+
+
+
+.Split('\n');
 }
 private void InitSprites2() {
- // Parse and attach the Waveront OBJ model specified above to the model view
-    MySimple3DObject Obj3D = MySimpleWavefrontObjLoader.LoadFromArray(ObjFileLines);
-    TheModelView.AttachModel(Obj3D);
+ // Make sure the model is not too complex for the script to handle
+ // In effect, try to avoid the "Script too Complex" error as much as possible
+    if (ObjFileLines.Length > 700) {
+        throw new ArgumentException("The Wavefront OBJ you are trying to load has more than 700 lines. This makes it too complex for the script to handle.");
+    }
+
+ // Create the 3D object
+    Obj3D = new MySimple3DObject();
+
+ // Parse the first 231 lines of the Wavefront OBJ file into the 3D object
+ // The loader will not do anything if the line index is outside the available range
+    MySimpleWavefrontObjLoader.LoadFromArray(ObjFileLines, Obj3D, 0, 230);    
+}
+private void InitSprites3() {
+ // Parse the next 230 lines of the Wavefront OBJ file into the 3D object
+ // The loader will not do anything if the line index is outside the available range
+    MySimpleWavefrontObjLoader.LoadFromArray(ObjFileLines, Obj3D, 231, 460);
+}
+private void InitSprites4() {
+ // Parse the last 240 lines of the Wavefront OBJ file into the 3D object
+ // The loader will not do anything if the line index is outside the available range
+    MySimpleWavefrontObjLoader.LoadFromArray(ObjFileLines, Obj3D, 461, 700);
 
  // One may also create a simple model form code and attach it to the model view, like this:
  /*
@@ -657,15 +701,6 @@ private void InitSprites2() {
                 .WithFace(new int[]{3,7,6,2}) // right
     );
 */
-
- // Set the object's position in 3D space
-    TheModelView.SetAttachedModelPosition(0, 0, MODEL_DISTANCE_FROM_VIEW);
-}
-private void InitSprites3() {
-
-}
-private void InitSprites4() {
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -684,7 +719,27 @@ private class My3DModelView : MyOnScreenObject {
 
     private MySimple3DObject AttachedModel;
 
-    public My3DModelView() : base(null, 0, 0, true) {
+    private int iterationNumber = 0;
+
+    private MyScreen TargetScreen;
+
+    private bool invertScreenColors = false;
+
+    private double rotYaw   = 0.01d;
+    private double rotPitch = 0.10d;
+    private double rotRoll  = 0.03d;
+
+    public My3DModelView(MyScreen TargetScreen, bool invertScreenColors) : base(null, 0, 0, true) {
+        this.TargetScreen = TargetScreen;
+        this.invertScreenColors = invertScreenColors;
+    }
+
+    public My3DModelView WithRotationSpeeds(double rotYaw, double rotPitch, double rotRoll) {
+        this.rotYaw   = rotYaw;
+        this.rotPitch = rotPitch;
+        this.rotRoll  = rotRoll;
+
+        return this;
     }
 
     public override int GetHeight() {
@@ -701,15 +756,38 @@ private class My3DModelView : MyOnScreenObject {
 
     protected override void Draw(MyCanvas TargetCanvas) {
         if (AttachedModel != null) {
-         // Rotate the model
-            AttachedModel.Rotate(0.5, 0.3, 1.2);
+         // Splitting the operation across multiple iterations,
+         // to avoid the "Script too Complex" error.
+            switch (iterationNumber) {
+             // The first iteration rotates the object
+             // The canvas is also cleared at this point, but it is not yet
+             // flushed to the target screen, to avoid flickering
+                case 0:
+                    AttachedModel.Rotate(rotYaw, rotPitch, rotRoll);
+                    TargetCanvas.Clear();
+                    break;
 
-         // TODO: if the wireframe doesn't look good, a z-buffer will be required,
-         //       to sort faces and draw only the visible ones
+             // The second iteration draws the object
+                case 1:
+                    foreach (MyFace Face in AttachedModel.Faces) {
+                        DrawFace(Face, TargetCanvas);
+                    }
+                    break;
 
-         // Draw the model's faces
-            foreach (MyFace Face in AttachedModel.Faces) {
-                DrawFace(Face, TargetCanvas);
+             // The third operation flushes the buffer of the target canvas onto
+             // the target screen
+                case 2:
+                    TargetScreen.FlushBufferToScreen(invertScreenColors);
+                    break;
+
+                default:
+                    break;
+            }
+
+         // Go to the next iteration number
+            iterationNumber++;
+            if (iterationNumber == 3) {
+                iterationNumber = 0;
             }
         }
     }
@@ -941,21 +1019,19 @@ private static void VertexTransform(MyPoint3D Vertex, ref MatrixD Transformation
  * going to be used in the script anyway
  */
 private class MySimpleWavefrontObjLoader {
-    public static MySimple3DObject LoadFromString(String document) {
-        if (document == null || document.Length == 0) {
-            throw new ArgumentException("The provided Wavefront OBJ is empty");
-        }
-        return LoadFromArray(document.Split('\n'));
-    }
 
-    public static MySimple3DObject LoadFromArray(String[] array) {
+    public static void LoadFromArray(String[] array, MySimple3DObject Obj3D, int lineStart, int lineEnd) {
         if (array == null || array.Length < 4) {
             throw new ArgumentException("The object definition must contain at least 4 lines (3 vertices and one face)");
         }
 
-        MySimple3DObject obj3D = new MySimple3DObject();
+        for (int lNumber = lineStart ; lNumber <= lineEnd ; lNumber++) {
+            if (lNumber >= array.Length) {
+                break;
+            }
 
-        foreach (String line in array) {
+            String line = array[lNumber];
+
             char componentType = line.Length == 0 ? 'x' : line[0];
 
             if (componentType == 'v') {
@@ -965,7 +1041,7 @@ private class MySimpleWavefrontObjLoader {
                         double x = double.Parse(vertDef[1], System.Globalization.CultureInfo.InvariantCulture);
                         double y = double.Parse(vertDef[2], System.Globalization.CultureInfo.InvariantCulture);
                         double z = double.Parse(vertDef[3], System.Globalization.CultureInfo.InvariantCulture);
-                        obj3D.WithVertex(x,y,z);
+                        Obj3D.WithVertex(x,y,z);
                     } catch (Exception exc) {
                         throw new ArgumentException("Cannot read vertex data from [" + line + "]: "  + exc.Message);
                     }
@@ -982,7 +1058,7 @@ private class MySimpleWavefrontObjLoader {
                         for (int i = 1 ; i < faceDef.Length ; i++) {
                             vertIndexes[i-1] = Int32.Parse(faceDef[i].Split('/')[0]) - 1;
                         }
-                        obj3D.WithFace(vertIndexes);
+                        Obj3D.WithFace(vertIndexes);
                     } catch (Exception exc) {
                         throw new ArgumentException("Cannot read face data at line [" + line + "]: " + exc.Message);
                     }
@@ -991,8 +1067,6 @@ private class MySimpleWavefrontObjLoader {
                 }
             }
         }
-
-        return obj3D;
     }  
 }
 
@@ -1008,6 +1082,9 @@ private const int RES_X = 139, RES_Y =  93;
 // This is the String array resulted from loading the Wavefront OBJ
 private String[] ObjFileLines;
 
+// The 3D object, which is loaded across multiple iterations to avoid the "Script too Complex" error
+private MySimple3DObject Obj3D;
+
 /**
  * This will be the interface to the application.
  */
@@ -1017,7 +1094,7 @@ private MyOnScreenApplication OnScreenApplication;
  * This is the 3D model view which will rendered the 3D object onto
  * the target LCD panel. It is initialized in the InitSprites1() method.
  */
-private My3DModelView TheModelView = new My3DModelView();
+private My3DModelView TheModelView;
 
 /**
  * Counter for the POST page
@@ -1041,7 +1118,10 @@ private void InitApplication() {
          // The POST page should disappear after 100 frames
             currFrame++;
             return currFrame >= POST_SCREEN_DURATION;
-        });
+        })
+        .WithoutAutomaticClear() // Don't clear the buffer automatically  - this will only make the 3D model blink
+        .WithoutAutomaticFlush() // Don't update the screen automatically - this will also make the 3D model blink
+        ;
 
  // Initialize the main page and add it to the application
     MyPage MainPage = new MyPage();
@@ -1052,8 +1132,19 @@ private void InitApplication() {
         MainPage.WithInvertedColors();
     }
 
+ // Create the model view
+    TheModelView = new My3DModelView(OnScreenApplication.GetTargetScreens()[0], INVERT_COLORS)
+        .WithRotationSpeeds(ROT_SPEED_RAD_YAW, ROT_SPEED_RAD_PITCH, ROT_SPEED_RAD_ROLL);
+
+ // Attach the 3D object to the model view
+    TheModelView.AttachModel(Obj3D);
+    TheModelView.SetAttachedModelPosition(0, 0, MODEL_DISTANCE_FROM_VIEW);
+
  // Add the model view to the main page
     MainPage.AddChild(TheModelView);
+
+    
+    
     
 }
 

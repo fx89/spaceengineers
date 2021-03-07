@@ -4,6 +4,55 @@
 
 
 
+/* README //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+This script displays a rotating wireframe mesh on a 1x1 LCD panel, on a resolution of 139x93 pixels. The mesh
+is specified in the Wavefront OBJ format, which can be exported to by almost every graphics software. Information
+regarding the Wavefront OBJ format can be found here:
+    https://en.wikipedia.org/wiki/Wavefront_.obj_file
+
+
+
+Updating the WAVEFRONT OBJ LOADING section:
+====================================================================================================================
+To load the mesh, simply export it as a Wavefront OBJ, open the file using a text editor and update the
+WAVEFRONT OBJ LOADING section, which can be found below, with the content of the file. To avoid errors caused
+by the complexity limitations imposed by the game, please make sure that only the vertices (lines starting with
+the letter v) and faces (lines starting with the letter f) are copied into the WAVEFRONT OBJ LOADING section.
+
+The maximum allowed number of lines is 700.
+====================================================================================================================
+====================================================================================================================
+====================================================================================================================
+
+
+
+Updating the CONFIGURATION section:
+====================================================================================================================
+The CONFIGURATION section allows setting the rotation speed on each axis, as well as the initial orientation of
+the object on screen. Please pay special attention to the MODEL_DISTANCE_FROM_VIEW property. If the model is too
+close, it will force the script to draw lines outside the screen. This will result in a "Script too Complex"
+error and the script will freeze. If this happens, then increase the distance until the script becomes stable.
+====================================================================================================================
+====================================================================================================================
+====================================================================================================================
+
+
+
+This is a showcase of the UI Framework, which enables low resolution graphics on text panels by dumping the frame
+buffer into a string, which is then set as the text property of a given text panel, which is set up to use the
+Monospace font and very small font size. The UI framework is minified in this script. The development version can be
+found here: https://github.com/fx89/spaceengineers/tree/main/UiFramework/UiFramework
+
+For a working example, please visit the following workshop item:
+    https://steamcommunity.com/sharedfiles/filedetails/?id=2415572447
+
+Development and partial building is done using MDK-SE: https://github.com/malware-dev/MDK-SE
+
+*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 // CONFIGURATION ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Name of the 1x1 LCD panel to which the view should draw
@@ -17,7 +66,7 @@ private static bool INVERT_COLORS = false;
 private const int POST_SCREEN_DURATION = 10;
 
 // Distance of the rendered object from the view
-//    --- increase this if you get the "Script too Complex" error while rendering
+//    --- increase this if you get the "Script too Complex" error while rendering - !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 private const double MODEL_DISTANCE_FROM_VIEW = 1.7d;
 
 // Set this to true to re-compute the object's center after loading
@@ -32,7 +81,6 @@ private const double ROT_SPEED_RAD_ROLL  = 0.000d;
 private const double INITIAL_ROTATION_RAD_YAW   = 0.00d;
 private const double INITIAL_ROTATION_RAD_PITCH = Math.PI;
 private const double INITIAL_ROTATION_RAD_ROLL  = 0.00d;
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -680,10 +728,12 @@ private void InitSprites4() {
 }
 
 private void InitSprites5() {
+ // Re-center the object, if this is required
     if (RECENTER_OBJECT_AFTER_LOADING) {
         Obj3D.Recenter();
     }
 
+ // Set the initial angle of the object
     Obj3D.Rotate(INITIAL_ROTATION_RAD_YAW, INITIAL_ROTATION_RAD_PITCH, INITIAL_ROTATION_RAD_ROLL);
 }
 
@@ -992,10 +1042,6 @@ private class MySimple3DObject {
      // Create the translation matrix
         MatrixD TranslationMatrix = MatrixD.CreateTranslation(x, y, z);
 
-        PROGRAM.Echo(TranslationMatrix.M41.ToString());
-        PROGRAM.Echo(TranslationMatrix.M42.ToString());
-        PROGRAM.Echo(TranslationMatrix.M43.ToString());
-
      // Translate the vertices
         Transform(TranslationMatrix);
     }
@@ -1005,17 +1051,12 @@ private class MySimple3DObject {
   * resides half way between the positive corner and the negative corner
   */
     public void Recenter() {
-        PROGRAM.Echo("Recentering");
      // See how much the object needs to be translated in each direction
      // to have the object's center half way between the positive corner
      // and the negative corner
         double xCorrection = ComputeCorrection(PositiveCorner.X, NegativeCorner.X);
         double yCorrection = ComputeCorrection(PositiveCorner.Y, NegativeCorner.Y);
         double zCorrection = ComputeCorrection(PositiveCorner.Z, NegativeCorner.Z);
-        PROGRAM.Echo(xCorrection.ToString());
-        PROGRAM.Echo(yCorrection.ToString());
-        PROGRAM.Echo(zCorrection.ToString());
-        PROGRAM.Echo(Vertices.Count.ToString());
 
      // Translate the object's vertices by the computed amount
         Translate(xCorrection, yCorrection, zCorrection);

@@ -369,12 +369,58 @@ private static void VertexTransform(MyPoint3D Vertex, ref MatrixD Transformation
  */
 private class MySimpleWavefrontObjLoader {
     public static MySimple3DObject LoadFromString(String document) {
+        if (document == null || document.Length == 0) {
+            throw new ArgumentException("The provided Wavefront OBJ is empty");
+        }
+        return LoadFromArray(document.Split('\n'));
+    }
+
+    public static MySimple3DObject LoadFromArray(String[] array) {
+        if (array == null || array.Length < 4) {
+            throw new ArgumentException("The object definition must contain at least 4 lines (3 vertices and one face)");
+        }
+
         MySimple3DObject obj3D = new MySimple3DObject();
 
+        foreach (String line in array) {
+            char componentType = line.Length == 0 ? 'x' : line[0];
 
+            if (componentType == 'v') {
+                String[] vertDef = line.Split(' ');
+                if (vertDef.Length >= 4) {
+                    try {
+                        double x = double.Parse(vertDef[1], System.Globalization.CultureInfo.InvariantCulture);
+                        double y = double.Parse(vertDef[2], System.Globalization.CultureInfo.InvariantCulture);
+                        double z = double.Parse(vertDef[3], System.Globalization.CultureInfo.InvariantCulture);
+                        obj3D.WithVertex(x,y,z);
+                    } catch (Exception exc) {
+                        throw new ArgumentException("Cannot read vertex data from [" + line + "]");
+                    }
+                    
+                } else {
+                    throw new ArgumentException("Vertex information incomplete at line [" + line + "]");
+                }
+            }
+            else if (componentType == 'f') {
+                String[] faceDef = line.Split(' ');
+                if (faceDef.Length >= 4) {
+                    try {
+                        int [] vertIndexes = new int[faceDef.Length - 1];
+                        for (int i = 1 ; i < faceDef.Length ; i++) {
+                            vertIndexes[i-1] = Int32.Parse(faceDef[i].Split('/')[0]);
+                        }
+                        obj3D.WithFace(vertIndexes);
+                    } catch (Exception exc) {
+                        throw new ArgumentException("Cannot read face data at line [" + line + "]");
+                    }
+                } else {
+                    throw new ArgumentException("Face information incomplete at line [" + line + "]");
+                }
+            }
+        }
 
         return obj3D;
-    }
+    }  
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

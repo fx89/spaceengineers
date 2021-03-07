@@ -107,5 +107,24 @@ namespace IngameScript.ui_framework {
         protected override void Init() {
             // Nothing to do here
         }
+
+        public MyStatefulAnimatedSpriteState GetState(string stateName) {
+         // Validate the input parameter
+            if (stateName == null || stateName.Length == 0) {
+                throw new ArgumentException("Invalid state name");
+            }
+
+         // Try to find the state
+            MyStatefulAnimatedSpriteState ret = null;
+            States.TryGetValue(stateName, out ret);
+
+         // If not found, then throw an exception, informing the caller that the state name is wrong
+            if (ret == null) {
+                throw new ArgumentException("Cannot find a state named [" + stateName + "]");
+            }
+
+         // If found, then return a reference
+            return ret;
+        }
     }
 }

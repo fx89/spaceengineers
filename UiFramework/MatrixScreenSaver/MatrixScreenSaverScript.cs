@@ -54,8 +54,20 @@ Development and partial building is done using MDK-SE: https://github.com/malwar
 
 // CONFIGURATION ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Name of the 1x1 LCD panel to which to draw the screen saver
-private const string TARGET_LCD_PANEL_NAME = "MATRIX_SCREENSAVER_SCREEN";
+// Name of the block to which to draw the screen saver. This can be an LCD panel,
+// control seat or anything with a text surface.
+private const string TARGET_BLOCK_NAME = "MATRIX_SCREENSAVER_SCREEN";
+
+// Control seats and other similar blocks may have multiple display panels.
+// The first one is 0, the second one is 1, and so on.
+private const int SURFACE_INDEX = 0;
+
+// The font size to set for the target text surface
+private const float PIXEL_SIZE = 0.190f;
+
+// Adjust the resoluton to fit the image to the target text surface
+private const int RES_X = 139;
+private const int RES_Y =  93;
 
 // false = white foreground on black background
 // true  = black foreground on white background
@@ -263,11 +275,6 @@ private void InitSprites4() {
 
 }
 
-
-// Screen resolution
-private const int RES_X = 139;
-private const int RES_Y =  93;
-
 /**
   * This is called from the 5th loop
   * It should be used for initializing the application.
@@ -277,10 +284,10 @@ private const int RES_Y =  93;
   */
 private void InitApplication() {
  // Set up the target screen
-    TerminalUtils.SetupTextPanelForMatrixDisplay(GridTerminalSystem, TARGET_LCD_PANEL_NAME, 0.190f);
+    TerminalUtils.SetupTextSurfaceForMatrixDisplay(GridTerminalSystem, TARGET_BLOCK_NAME, SURFACE_INDEX, PIXEL_SIZE);
 
  // Initialize the application
-    OnScreenApplication = UiFrameworkUtils.InitSingleScreenApplication(GridTerminalSystem, TARGET_LCD_PANEL_NAME, RES_X, RES_Y, false)
+    OnScreenApplication = UiFrameworkUtils.InitSingleScreenApplication(GridTerminalSystem, TARGET_BLOCK_NAME, SURFACE_INDEX, RES_X, RES_Y, false)
         .WithDefaultPostPage((MyOnScreenApplication app) => {
          // The POST page should disappear after the configured number of frames
             currFrame++;

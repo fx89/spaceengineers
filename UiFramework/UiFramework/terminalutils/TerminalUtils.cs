@@ -9,7 +9,40 @@ using VRage.Game.GUI.TextPanel;
 
 namespace IngameScript.terminal_utils {
     public class TerminalUtils {
+        public static IMyTextSurface FindTextSurface(IMyGridTerminalSystem MyGridTerminalSystem, String blockName, int surfaceIndex) {
+         // Get all the blocks having the given name
+            List<IMyTerminalBlock> allFoundBlocks
+                = GetAllBlocksWithName(MyGridTerminalSystem, blockName);
+
+         // Get the first text panel or control seat having a text surface at the given index
+            foreach (IMyTerminalBlock block in allFoundBlocks) {
+                if (block is IMyTextSurfaceProvider) {
+                    IMyTextSurface Surface = ((IMyTextSurfaceProvider)block).GetSurface(surfaceIndex);
+                    if (Surface != null) {
+                        return Surface;
+                    }
+                }
+            }
+
+         // Let the caller know if nothing was found
+            throw new ArgumentException("Could not get text surface nbr [" + surfaceIndex + "] of [" + blockName + "].");
+        }
+
         public static T FindFirstBlockWithName<T>(IMyGridTerminalSystem MyGridTerminalSystem, String blockName) {
+         // Get all the blocks having the given name
+            List<IMyTerminalBlock> allFoundBlocks
+                = GetAllBlocksWithName(MyGridTerminalSystem, blockName);
+
+         // Return the cast result or crash and burn
+            foreach (IMyTerminalBlock block in allFoundBlocks) {
+                if (block is T) {
+                    return (T)block;
+                }
+            }
+            return default(T);
+        }
+
+        private static List<IMyTerminalBlock> GetAllBlocksWithName(IMyGridTerminalSystem MyGridTerminalSystem, String blockName) {
          // Verify the input parameter
             if (blockName == null || blockName.Length == 0) {
                 throw new ArgumentException("Invalid block name");
@@ -24,30 +57,29 @@ namespace IngameScript.terminal_utils {
                 throw new ArgumentException("Cannot find a block named [" + blockName + "]");
             }
 
-         // Return the cast result or crash and burn
-            foreach (IMyTerminalBlock block in allFoundBlocks) {
-                return (T)block;
-            }
-            return default(T);
+         // Return the result
+            return allFoundBlocks;
         }
 
-        public static void SetupTextPanelForMatrixDisplay(
+        public static void SetupTextSurfaceForMatrixDisplay(
             IMyGridTerminalSystem GridTerminalSystem,
-            string textPanelName,
+            string blockName,
+            int surfaceIndex,
             float fontSize
         ) {
             // Get the text panel
-               IMyTextPanel TextPanel = TerminalUtils.FindFirstBlockWithName<IMyTextPanel>(GridTerminalSystem, textPanelName);
-               if (TextPanel == null) {
-                   throw new ArgumentException("Cannot find a text panel named [" + textPanelName + "]");
+               IMyTextSurface TextSurface = TerminalUtils.FindTextSurface(GridTerminalSystem, blockName,surfaceIndex);
+               if (TextSurface == null) {
+                   throw new ArgumentException("Cannot find a text panel named [" + blockName + "]");
                }
 
             // Set up the text panel
-               TextPanel.ContentType = ContentType.TEXT_AND_IMAGE;
-               TextPanel.FontSize = fontSize;
-               TextPanel.TextPadding = 0;
-               TextPanel.SetValue<long>("Font", 1147350002);
-               TextPanel.Alignment = TextAlignment.LEFT;
+               TextSurface.ContentType = ContentType.TEXT_AND_IMAGE;
+               TextSurface.FontSize = fontSize;
+               TextSurface.TextPadding = 0;
+            // TextSurface.SetValue<long>("Font", 1147350002);
+               TextSurface.Font = "Monospace";
+               TextSurface.Alignment = TextAlignment.LEFT;
         }
     }
 }

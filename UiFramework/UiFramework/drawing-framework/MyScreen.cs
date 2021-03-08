@@ -13,7 +13,7 @@ namespace IngameScript.drawing_framework {
     */
     public class MyScreen {
      // Properties needed for the functionality of the screen
-        private IMyTextPanel TargetLCD;
+        private IMyTextSurface TargetSurface;
         private MyCanvas Canvas;
         private bool mirrorX;
 
@@ -24,8 +24,8 @@ namespace IngameScript.drawing_framework {
         private int clipRectX1, clipRectY1, clipRectX2, clipRectY2;
         private bool isClipping = false;
 
-        public MyScreen(IMyTextPanel TargetLCD, char pixelValueOn, char pixelValueOff, bool mirrorX) {
-            this.TargetLCD = TargetLCD;
+        public MyScreen(IMyTextSurface TargetSurface, char pixelValueOn, char pixelValueOff, bool mirrorX) {
+            this.TargetSurface = TargetSurface;
             this.mirrorX = mirrorX;
             this.pixelValueOn = pixelValueOn;
             this.pixelValueOff = pixelValueOff;
@@ -157,7 +157,7 @@ namespace IngameScript.drawing_framework {
             }
 
          // Apply the newly rendered buffer to the target LCD
-            TargetLCD.WriteText(renderedBuffer.ToString());
+            TargetSurface.WriteText(renderedBuffer.ToString());
         }
 
         public MyCanvas GetCanvas() {

@@ -228,14 +228,14 @@ private class MyChaseLightController {
         }
 
      // Set up the text panel
-        TerminalUtils.SetupTextPanelForMatrixDisplay(GridTerminalSystem, textPanelName, FONT_SIZE);
+        TerminalUtils.SetupTextSurfaceForMatrixDisplay(GridTerminalSystem, textPanelName, 0, FONT_SIZE);
 
      // Initialize the application
         OnScreenApplication
         = UiFrameworkUtils.InitSingleScreenApplication(
-            GridTerminalSystem, textPanelName, // Reference to the target text panel
-            RES_X, RES_Y,                      // The target display resolution
-            mirrored                           // The screen image might have to be mirrored
+            GridTerminalSystem, textPanelName, 0, // Reference to the target text panel
+            RES_X, RES_Y,                         // The target display resolution
+            mirrored                              // The screen image might have to be mirrored
           );
 
      // Create the main page and add it to the application

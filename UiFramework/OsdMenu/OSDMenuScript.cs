@@ -64,8 +64,12 @@ Development and partial building is done using MDK-SE: https://github.com/malwar
 
 // CONFIG //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// The name of the text panel where the OSD menu will be displayed
-private const string TEXT_PANEL_NAME = "VIDEOWALL_PANEL_2x2";
+// The name of the block where the OSD menu will be displayed
+private const string TARGET_BLOCK_NAME = "VIDEOWALL_PANEL_2x2";
+
+// Control seats and other similar blocks may have multiple display panels.
+// The first one is 0, the second one is 1, and so on.
+private const int SURFACE_INDEX = 0;
 
 // The display resolution (if it's too large, the script will crash with a "Script too Complex" error)
 // These values work with a text panel having the following properties:
@@ -74,15 +78,14 @@ private const string TEXT_PANEL_NAME = "VIDEOWALL_PANEL_2x2";
 //      TEXT PADDING = 0.0%
 //      ALIGNMENT    = LEFT
 //      FONT SIZE    = 0.190
-// The above parameters will be applied automatically to the target text panel if the
-// AUTO_APPLY_SCREEN_PARAMETERS is set to true. The default parameters will work
-// well on a 1x1 display. For other types of text panels or for custom setup, such
-// as displaying the menu on only the top half of the panel because the bottom half
-// is covered by the console, the AUTO_APPLY_SCREEN_PARAMETERS parameter will have
-// to be set to false and the panel settings will have to be adjusted manually.
-private const bool AUTO_APPLY_SCREEN_PARAMETERS = true;
-private const int  RESOLUTION_WIDTH             = 139;
-private const int  RESOLUTION_HEIGHT            =  93;
+// The above parameters will be applied automatically to the target text surface.
+// The default parameters will work well on a 1x1 display. For other types of text panels
+// or for custom setup, such as displaying the menu on only the top half of the panel
+// because the bottom half is covered by the console,the resolution and font size may be
+// adjusted.
+private const int  RESOLUTION_WIDTH  = 139;
+private const int  RESOLUTION_HEIGHT =  93;
+private const float FONT_SIZE        = 0.190f; // Adjust this to make the pixels smaller or larger
 
 // Set this to TRUE in case you placed a transparent text panel the other way around
 private const bool IS_SCREEN_MIRRORED_HORIZONTALLY = false;
@@ -732,26 +735,13 @@ private void InitSprites4() {
   *      > linking logic and animations
   */
 private void InitApplication() {
- // Get a reference to the target panel or crash
-    IMyTerminalBlock TextPanel = GridTerminalSystem.GetBlockWithName(TEXT_PANEL_NAME);
-    if (TextPanel == null || !(TextPanel is IMyTextPanel)) {
-        throw new ArgumentException("Could not find a text panel named [" + TEXT_PANEL_NAME + "]");
-   }
-
- // Apply the settings if so configured
-    if (AUTO_APPLY_SCREEN_PARAMETERS) {
-        IMyTextPanel TPanel = (IMyTextPanel) TextPanel;
-        TPanel.ContentType = ContentType.TEXT_AND_IMAGE;
-        TPanel.SetValue<long>("Font", 1147350002);
-        TPanel.TextPadding = 0;
-        TPanel.Alignment = TextAlignment.LEFT;
-        TPanel.FontSize = 0.190f;
-    }
+ // Update the target text surface parameters to display monospace text of the required font size
+    TerminalUtils.SetupTextSurfaceForMatrixDisplay(GridTerminalSystem, TARGET_BLOCK_NAME, SURFACE_INDEX, FONT_SIZE);
 
  // Initialize the application, giving it a canvass and one or more screens to display it on.
  // Also add the default POST page to the application. The default POST page is an optional
  // built-in page which can be included by calling the WithDefaultPostPage() method.
-    OnScreenApplication = UiFrameworkUtils.InitSingleScreenApplication(GridTerminalSystem, TEXT_PANEL_NAME, RESOLUTION_WIDTH, RESOLUTION_HEIGHT, IS_SCREEN_MIRRORED_HORIZONTALLY)
+    OnScreenApplication = UiFrameworkUtils.InitSingleScreenApplication(GridTerminalSystem, TARGET_BLOCK_NAME, SURFACE_INDEX, RESOLUTION_WIDTH, RESOLUTION_HEIGHT, IS_SCREEN_MIRRORED_HORIZONTALLY)
         .WithDefaultPostPage((MyOnScreenApplication app) => {
          // The POST page should disappear after POST_PAGE_DURATION frames
             currFrame++;
@@ -793,19 +783,6 @@ private void MonitorSwitch(String switchName, Action SwitchAction) {
 
 
 
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
 // MAIN ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 public static Program PROGRAM;
@@ -838,5 +815,15 @@ public void Main(string argument, UpdateType updateSource) {
         OnScreenApplication.Cycle();
     }
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 }}

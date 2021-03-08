@@ -1213,10 +1213,10 @@ int currFrame = 0;
   */
 private void InitApplication() {
  // Set up the target screen
-    TerminalUtils.SetupTextPanelForMatrixDisplay(GridTerminalSystem, TARGET_LCD_PANEL_NAME, 0.190f);
+    TerminalUtils.SetupTextSurfaceForMatrixDisplay(GridTerminalSystem, TARGET_LCD_PANEL_NAME, 0, 0.190f);
 
  // Initialized the application with the default POST page
-    OnScreenApplication = UiFrameworkUtils.InitSingleScreenApplication(GridTerminalSystem, TARGET_LCD_PANEL_NAME, RES_X, RES_Y, false)
+    OnScreenApplication = UiFrameworkUtils.InitSingleScreenApplication(GridTerminalSystem, TARGET_LCD_PANEL_NAME, 0, RES_X, RES_Y, false)
         .WithDefaultPostPage((MyOnScreenApplication app) => {
          // The POST page should disappear after 100 frames
             currFrame++;

@@ -12,14 +12,17 @@ namespace IngameScript.ui_framework {
         private const char SCREEN_PIXEL_VALUE_ON = '@';
         private const char SCREEN_PIXEL_VALUE_OFF = ' ';
 
-        public static MyOnScreenApplication InitSingleScreenApplication(IMyGridTerminalSystem MyGridTerminalSystem, String textPanelName, int resX, int resY, bool mirrorX) {
+        public static MyOnScreenApplication InitSingleScreenApplication(
+            IMyGridTerminalSystem MyGridTerminalSystem, String textPanelName, int surfaceIndex,
+            int resX, int resY, bool mirrorX
+        ) {
             return new MyOnScreenApplication()
                         .WithCanvas(
                             new MyCanvas(resX, resY)
                             )
                         .OnScreen(
                             new MyScreen(
-                                TerminalUtils.FindFirstBlockWithName<IMyTextPanel>(MyGridTerminalSystem, textPanelName),
+                                TerminalUtils.FindTextSurface(MyGridTerminalSystem, textPanelName, surfaceIndex),
                                 SCREEN_PIXEL_VALUE_ON, SCREEN_PIXEL_VALUE_OFF,
                                 mirrorX
                             )

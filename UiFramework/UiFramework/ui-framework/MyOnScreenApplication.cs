@@ -158,6 +158,7 @@ namespace IngameScript.ui_framework {
             foreach (MyPage Pg in Pages) {
                 if (Pg == Page) {
                     CurrentPage = Pg;
+                    CurrentPage.Activate();
                 }
             }
         }
@@ -167,6 +168,7 @@ namespace IngameScript.ui_framework {
                 return;
             }
             CurrentPage = Pages[pageNumber];
+            CurrentPage.Activate();
         }
 
         public MyPage GetCurrentPage() {

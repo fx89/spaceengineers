@@ -49,5 +49,10 @@ namespace IngameScript.ui_framework {
         protected override void Init() {
             // Nothing to do here
         }
+
+     /**
+       * Occurs every time the page is switched to
+       */
+        public virtual void Activate() {}
     }
 }

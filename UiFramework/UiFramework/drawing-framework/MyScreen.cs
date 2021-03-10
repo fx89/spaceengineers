@@ -13,7 +13,7 @@ namespace IngameScript.drawing_framework {
     */
     public class MyScreen {
      // Properties needed for the functionality of the screen
-        private IMyTextSurface TargetSurface;
+        public IMyTextSurface TargetSurface;
         private MyCanvas Canvas;
         private bool mirrorX;
 

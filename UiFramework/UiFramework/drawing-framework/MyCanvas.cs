@@ -146,6 +146,20 @@ namespace IngameScript.drawing_framework {
             }
         }
 
+        public void BitBlt(
+            MySprite Sprite,
+            int cropX1, int cropY1, int cropX2, int cropY2,
+            int x, int y
+        ) {
+            int trgX = x;
+            for (int srcX = cropX1 ; srcX <= cropX2 ; srcX++) {
+                int trgY = y;
+                for (int srcY = cropY1 ; srcY <= cropY2 ; srcY++) {
+                    SetPixel(trgX, trgY, Sprite.data[srcY * Sprite.width + srcX]);
+                trgY++;}
+            trgX++;}
+        }
+
       /**
         * Draws text on the canvas using the default font.
         * Multi-font support may be added at a later time.

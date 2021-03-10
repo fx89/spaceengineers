@@ -57,6 +57,8 @@ namespace IngameScript.drawing_framework.fonts {
         private static MySprite SPRITE_EQ     = CreateFontSprite(new byte[] { 0x00,0x00,0xf8,0x00,0xf8,0x00,0x00 });
         private static MySprite SPRITE_PCT    = CreateFontSprite(new byte[] { 0xc0,0xc8,0x10,0x20,0x40,0x98,0x18 });
 
+        private static MySprite SPRITE_SPC    = new MySprite(6, 7, new bool[42]);
+
         private static MySprite[] Create() {
             MySprite[] BitmapFont = new MySprite[256];
 
@@ -102,6 +104,7 @@ namespace IngameScript.drawing_framework.fonts {
             BitmapFont['>'] = SPRITE_GT;
             BitmapFont['='] = SPRITE_EQ;
             BitmapFont['%'] = SPRITE_PCT;
+            BitmapFont[' '] = SPRITE_SPC;
 
             return BitmapFont;
         }

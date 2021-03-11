@@ -17,10 +17,8 @@ To modify the menu to suit your needs, please update the configuration in the fo
 For a working example, please visit the following workshop item:
     https://steamcommunity.com/sharedfiles/filedetails/?id=2415572447
 
-This is a showcase of the UI Framework, which enables low resolution graphics on text panels by dumping the frame
-buffer into a string, which is then set as the text property of a given text panel, which is set up to use the
-Monospace font and very small font size. The UI framework is minified in this script. The development version can be
-found here: https://github.com/fx89/spaceengineers/tree/main/UiFramework/UiFramework
+The development version of the script can be found here:
+    https://github.com/fx89/spaceengineers/tree/main/UiFramework/OsdMenu
 
 Development and partial building is done using MDK-SE: https://github.com/malware-dev/MDK-SE
 
@@ -31,7 +29,7 @@ Development and partial building is done using MDK-SE: https://github.com/malwar
 // CONFIG //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // The name of the block where the OSD menu will be displayed
-private const string TARGET_BLOCK_NAME = "VIDEOWALL_PANEL_2x2";
+private const string TARGET_BLOCK_NAME = "OSD_MENU_SCREEN";
 
 // Control seats and other similar blocks may have multiple display panels.
 // The first one is 0, the second one is 1, and so on.
@@ -82,10 +80,10 @@ private const bool IS_OSD_MENU_INVERTED = true;
 //       the switch status block is not turned off automatically (because of
 //       the crash) and, in the case of a lighting block, the light will remain
 //       on, so that it's easy to spot.
-private const string CURSOR_DOWN_SWITCH_STATUS_BLOCK_NAME = "Console Switch 1";
-private const string CURSOR_UP_SWITCH_STATUS_BLOCK_NAME   = "Console Switch 2";
-private const string CURSOR_IN_SWITCH_STATUS_BLOCK_NAME   = "Console Switch 3";
-private const string CURSOR_OUT_SWITCH_STATUS_BLOCK_NAME  = "Console Switch 4";
+private const string CURSOR_DOWN_SWITCH_STATUS_BLOCK_NAME = "Console Switch DOWN";
+private const string CURSOR_UP_SWITCH_STATUS_BLOCK_NAME   = "Console Switch UP";
+private const string CURSOR_IN_SWITCH_STATUS_BLOCK_NAME   = "Console Switch IN";
+private const string CURSOR_OUT_SWITCH_STATUS_BLOCK_NAME  = "Console Switch OUT";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -117,7 +115,7 @@ private MyOsdMenu InitOsdMenu() {
 	  // Add the Grid Control option to the menu.
 	  // This will be represented by an animated icon with 9 frames (SPRITE_GRID_[00-08]).
 	  // Each frame is inserted 4 times, so that the animation appears to run 4 times slower.
-	  // The icon will be set on top of a text label pelling "Grid control"
+	  // The icon will be set on top of a text label reading "Grid control"
 	  // This option will also have a sub-menu
 		.WithIconOption(
 			"Grid control",
@@ -311,7 +309,7 @@ private const bool _ = false, O = true;
 
 // This is a copy of a stock sprite, except its colors are inverted.
 // The constructor takes 3 parameters: the width, the height and the data.
-// The width and the height are copied over rom SPRITE_PWR.
+// The width and the height are copied over from SPRITE_PWR.
 // The data (which is an array of booleans) is first inverted by using the utility method NegateBoolArray()
 MySprite SPRITE_PWR_ON = new MySprite(
 	StockSprites.SPRITE_PWR.width,

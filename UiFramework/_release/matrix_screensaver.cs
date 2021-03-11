@@ -1,12 +1,11 @@
 /* README //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-This script makes it rain pixels on a 1x1 LDC panel. The name of the panel, as well as other configuration,
-can be set in the CONFIGURATION section below.
+This script makes it rain pixels on a 1x1 LCD panel. The name of the panel, as well as other configuration,
+can be set in the CONFIGURATION section below. To make it work on control stations and other kinds of screens,
+one must adjust the resolution, pixel size and surface index.
 
-This is a showcase of the UI Framework, which enables low resolution graphics on text panels by dumping the frame
-buffer into a string, which is then set as the text property of a given text panel, which is set up to use the
-Monospace font and very small font size. The UI framework is minified in this script. The development version can be
-found here: https://github.com/fx89/spaceengineers/tree/main/UiFramework/UiFramework
+The development version of the script can be found here:
+    https://github.com/fx89/spaceengineers/tree/main/UiFramework/MatrixScreenSaver
 
 For a working example, please visit the following workshop item:
     https://steamcommunity.com/sharedfiles/filedetails/?id=2415572447

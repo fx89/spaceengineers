@@ -123,12 +123,10 @@ private const double INITIAL_ROTATION_RAD_ROLL  = 0.00d;
 //          https://en.wikipedia.org/wiki/Wavefront_.obj_file
 
 private void InitSprites1() {
-
-}
-private void InitSprites2() {
  // Get the model from the programmable block's custom data
     ObjFileLines = Me.CustomData.Split('\n');
-
+}
+private void InitSprites2() {
  // Make sure the model is not too complex for the script to handle
  // In effect, try to avoid the "Script too Complex" error as much as possible
     if (ObjFileLines.Length > 700) {

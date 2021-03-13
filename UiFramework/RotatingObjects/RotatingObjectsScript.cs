@@ -95,12 +95,7 @@ private const int    SURFACE_INDEX         = 0;            // Control seats and 
 private const float  PIXEL_SIZE            = 0.08056f;     // The font size to set for the target text surface
 private const int    RES_X                 = 325;          // Depending on the font size, more or less pixels will fit horizontally
 private const int    RES_Y                 = 215;          // Depending on the font size, ore or less pixels will fit vertically
-private const bool   MIRROR_X_AXIS         = false;        // If a transparent screen is placed the other way around, the image will have to be mirrored
 private const int    POST_SCREEN_DURATION  = 100;          // Set this to 0 to disable the POST screen. Its purpose is mainly to test that the set font size and resolution produce an image of the desired size
-
-// Set these numbers higher to handle higher resolution graphics at the expense of frame rate
-private const int N_COMPUTE_FRAMES = 2; // The minimum for this is 2 (1 = rotating the mesh, 2 = drawing the mesh onto the backbuffer)
-private const int N_RENDER_FRAMES  = 2;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -611,6 +606,13 @@ private class MySimpleWavefrontObjLoader {
 
 
 // APPLICATION INIT ////////////////////////////////////////////////////////////////////////////////////////////////
+
+// The script will become too complex if the X axis is mirrored
+private const bool MIRROR_X_AXIS = false;
+
+// The My3DModelView class doesn't currently handle N_COMPUTE_FRAMES <> 2
+private const int N_COMPUTE_FRAMES = 2; // The minimum for this is 2 (1 = rotating the mesh, 2 = drawing the mesh onto the backbuffer)
+private const int N_RENDER_FRAMES  = 2; // Rendering the target screen in two separate frames to accommodate the slighty higher resolution
 
 // This is the String array resulted from loading the Wavefront OBJ
 private String[] ObjFileLines;

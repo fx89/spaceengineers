@@ -113,15 +113,15 @@ private static bool INVERT_COLORS = false;
 
 // Distance of the rendered object from the view
 //    --- increase this if you get the "Script too Complex" error while rendering - !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-private const double MODEL_DISTANCE_FROM_VIEW = 4.0d;
+private const double MODEL_DISTANCE_FROM_VIEW = 5.0d;
 
 // Set this to true to re-compute the object's center after loading
 private static bool RECENTER_OBJECT_AFTER_LOADING = true;
 
 // Rotation angles in radians (how much should the object turn each frame)
 private const double ROT_SPEED_RAD_YAW   = 0.015d;
-private const double ROT_SPEED_RAD_PITCH = 0.000d;
-private const double ROT_SPEED_RAD_ROLL  = 0.000d;
+private const double ROT_SPEED_RAD_PITCH = 0.010d;
+private const double ROT_SPEED_RAD_ROLL  = 0.002d;
 
 // Initial rotation angles in radians
 private const double INITIAL_ROTATION_RAD_YAW   = Math.PI;
@@ -330,8 +330,9 @@ private class My3DModelView : MyOnScreenObject {
             z = 1;
         }
 
-        ret.X = CENTER_X + (((Vertex.X + AttachedModel.Position.X) / z) * SCALE_X) + (z * 30 / SCALE_X);
-        ret.Y = CENTER_Y + (((Vertex.Y + AttachedModel.Position.Y) / z) * SCALE_Y) + (z * 30 / SCALE_Y);
+		double unit = 0.1 * Math.Pow(2, z / 2);
+        ret.X = CENTER_X + (((Vertex.X + AttachedModel.Position.X) / unit) * SCALE_X);
+        ret.Y = CENTER_Y + (((Vertex.Y + AttachedModel.Position.Y) / unit) * SCALE_Y);
 
         return ret;
     }

@@ -72,14 +72,11 @@ private const int    POST_SCREEN_DURATION  = 100;          // Set this to 0 to d
 // 3D RENDER CONFIGURATION /////////////////////////////////////////////////////////////////////////////////////////
 
 // Set this to true for black foreground on white background
-private static bool INVERT_COLORS = true;
+private static bool INVERT_COLORS = false;
 
 // Distance of the rendered object from the view
 //    --- increase this if you get the "Script too Complex" error while rendering - !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-private const double MODEL_DISTANCE_FROM_VIEW = 5.0d;
-
-// Set this to true to re-compute the object's center after loading
-private static bool RECENTER_OBJECT_AFTER_LOADING = true;
+private const double MODEL_DISTANCE_FROM_VIEW = 3.0d;
 
 // Rotation angles in radians (how much should the object turn each frame)
 private const double ROT_SPEED_RAD_YAW   = 0.015d;
@@ -99,8 +96,7 @@ private const double INITIAL_ROTATION_RAD_ROLL  = 0.00d;
 
 // This is a simple format which allows defining simple geometry, such as vertices and faces, in text mode.
 // This format is available for export in almost every 3D graphics software and it's also easy to understand
-// and parse. For more information on the Wavefront OBJ format, please visit this link:
-//          https://en.wikipedia.org/wiki/Wavefront_.obj_file
+// and parse.
 
 private void InitSprites1() {
  // Get the model from the programmable block's custom data
@@ -328,16 +324,17 @@ private void InitSprites4() {
 
 private void InitSprites5() {
  // Re-center the object, if this is required
-    if (RECENTER_OBJECT_AFTER_LOADING) {
-        Obj3D.Recenter();
-    }
+    Obj3D.Recenter();
+}
 
+private void InitSprites6(){
+ // Normalize the object (only works after re-centering)
+    Obj3D.Normalize(OBJ_MAX_SCALE);
+}
+private void InitSprites7(){
  // Set the initial angle of the object
     Obj3D.Rotate(INITIAL_ROTATION_RAD_YAW, INITIAL_ROTATION_RAD_PITCH, INITIAL_ROTATION_RAD_ROLL);
 }
-
-private void InitSprites6(){}
-private void InitSprites7(){}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -655,6 +652,37 @@ private class MySimple3DObject {
         double halfPoint = (highVal - lowVal) / 2d;
         return -(lowVal + halfPoint);
     }
+
+ /**
+   * If any one of the object's dimensions exceeds the given length,
+   * then the object will be shrinked down to specs.
+   * !!!
+   * Due to complexity constraints, this does not call the re-center
+   * method before it does its work. The re-center method has to be
+   * called from a previous loop if this is to work properly.
+   */
+    public void Normalize(double maxSize) {
+     // Compute the max dimension
+        double maxDim
+            = Math.Max(PositiveCorner.X - NegativeCorner.X,
+              Math.Max(PositiveCorner.Y - NegativeCorner.Y,
+                       PositiveCorner.Z - NegativeCorner.Z));
+
+     // If the max dimension exceeds the given max size, then resize
+     // each vertex, including the positive and negative corners
+        if (maxDim > maxSize) {
+         // Compute the shrink factor and create the scale matrix
+            double shrinkFactor = maxDim / maxSize;
+            MatrixD ScaleMatrix = MatrixD.CreateScale(1 / shrinkFactor);
+
+         // Scale the positive and negative corners
+            VertexTransform(PositiveCorner, ref ScaleMatrix);
+            VertexTransform(NegativeCorner, ref ScaleMatrix);
+
+         // Scale the vertices
+            Transform(ScaleMatrix);
+        }
+    }
 }
 
 /** Transform the vertex using a copy of the logic of multiplying the vector by the 
@@ -752,6 +780,11 @@ private const bool MIRROR_X_AXIS = false;
 // The My3DModelView class doesn't currently handle N_COMPUTE_FRAMES <> 2
 private const int N_COMPUTE_FRAMES = 2; // The minimum for this is 2 (1 = rotating the mesh, 2 = drawing the mesh onto the backbuffer)
 private const int N_RENDER_FRAMES  = 2; // Rendering the target screen in two separate frames to accommodate the slighty higher resolution
+
+// The max scale of the object - objects will be shrinked to conform to this specification,
+// otherwise they might be too big and not be drawn. The script could even crash with the
+// dreaded "Script too Complex" error, because the line algorythm will have too many pixels to set.
+private const double OBJ_MAX_SCALE = 2.0d;
 
 // This is the String array resulted from loading the Wavefront OBJ
 private String[] ObjFileLines;

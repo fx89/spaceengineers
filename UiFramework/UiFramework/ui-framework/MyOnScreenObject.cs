@@ -151,7 +151,7 @@ namespace IngameScript.ui_framework {
          // true during the construction phase.
             if (isObjectNotInitialized) {
                 Init();
-                isObjectNotInitialized = true;
+                isObjectNotInitialized = false;
             }
 
          // If the object is visible on screen, then draw it

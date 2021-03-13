@@ -560,7 +560,14 @@ private class MySimpleWavefrontObjLoader {
 
             String line = array[lNumber];
 
+         // Get the component type (expected v or f)
             char componentType = line.Length == 0 ? 'x' : line[0];
+
+         // If the component type is not one letter long (for instance if it's vt),
+         // then go to the next line
+            if (line.Length < 2 || line[1] != ' ') {
+                continue;
+            }
 
             if (componentType == 'v') {
                 String[] vertDef = line.Split(' ');

@@ -85,11 +85,11 @@ private static bool RECENTER_OBJECT_AFTER_LOADING = true;
 
 // Rotation angles in radians (how much should the object turn each frame)
 private const double ROT_SPEED_RAD_YAW   = 0.015d;
-private const double ROT_SPEED_RAD_PITCH = 0.020d;
+private const double ROT_SPEED_RAD_PITCH = 0.000d;
 private const double ROT_SPEED_RAD_ROLL  = 0.000d;
 
 // Initial rotation angles in radians
-private const double INITIAL_ROTATION_RAD_YAW   = 0.00d;
+private const double INITIAL_ROTATION_RAD_YAW   = Math.PI;
 private const double INITIAL_ROTATION_RAD_PITCH = 0.00d;
 private const double INITIAL_ROTATION_RAD_ROLL  = 0.00d;
 
@@ -525,7 +525,14 @@ private class MySimpleWavefrontObjLoader {
 
             String line = array[lNumber];
 
+         // Get the component type (expected v or f)
             char componentType = line.Length == 0 ? 'x' : line[0];
+
+         // If the component type is not one letter long (for instance if it's vt),
+         // then go to the next line
+            if (line.Length < 2 || line[1] != ' ') {
+                continue;
+            }
 
             if (componentType == 'v') {
                 String[] vertDef = line.Split(' ');

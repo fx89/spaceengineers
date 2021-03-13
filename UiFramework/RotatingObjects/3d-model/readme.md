@@ -1,0 +1,1 @@
+The Wavefront OBJ files have the ".out" extension so that they're not excluded by .gitignore for confusion with C++ .obj files

@@ -74,12 +74,12 @@ namespace IngameScript.ui_framework {
         }
 
 
-        protected override void Compute(MyCanvas TargetCanvas) {
+        protected override void Compute(MyCanvas TargetCanvas, int currIteration) {
          // Frames must cycle on even if the object is not visible on screen
             CurrentFrame = CurrentState.GetFrame();
         }
 
-        protected override void Draw(MyCanvas TargetCanvas) {
+        protected override void Draw(MyCanvas TargetCanvas, int currIteration) {
             TargetCanvas.BitBltExt(
                 CurrentFrame,
                 GetAbsoluteX(), GetAbsoluteY(),

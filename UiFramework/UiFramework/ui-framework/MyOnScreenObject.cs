@@ -25,8 +25,8 @@ namespace IngameScript.ui_framework {
 
         public MyOnScreenObject ParentObject;
         public List<MyOnScreenObject> ChildObjects = new List<MyOnScreenObject>();
-        private Func<MyOnScreenObject, int> ClientCycleMethod;
-        private Func<MyCanvas, int> ClientDrawMethod;
+        private Action<MyOnScreenObject, int> ClientCycleMethod;
+        private Action<MyCanvas, int> ClientDrawMethod, ClientPreDrawMethod;
         private bool isObjectNotInitialized = true;
 
         public MyOnScreenObject(MyOnScreenObject ParentObject, int x, int y, bool isVisible) {
@@ -44,17 +44,22 @@ namespace IngameScript.ui_framework {
         * This method should be used in case the caller needs to implement custom functionality
         * which is lite enough to fit inside a lambda expression instead of a new class.
         */
-        public MyOnScreenObject WithClientCycleMethod(Func<MyOnScreenObject, int> ClientCycleMethod) {
+        public MyOnScreenObject WithClientCycleMethod(Action<MyOnScreenObject, int> ClientCycleMethod) {
             SetClientCycleMethod(ClientCycleMethod);
             return this;
         }
 
-        public void SetClientCycleMethod(Func<MyOnScreenObject, int> ClientCycleMethod) {
+        public void SetClientCycleMethod(Action<MyOnScreenObject, int> ClientCycleMethod) {
             this.ClientCycleMethod = ClientCycleMethod;
         }
 
-        public MyOnScreenObject WithClientDrawMethod(Func<MyCanvas, int> ClientDrawMethod) {
+        public MyOnScreenObject WithClientDrawMethod(Action<MyCanvas, int> ClientDrawMethod) {
             this.ClientDrawMethod = ClientDrawMethod;
+            return this;
+        }
+
+        public MyOnScreenObject WithClientPreDrawMethod(Action<MyCanvas, int> ClientPreDrawMethod) {
+            this.ClientPreDrawMethod = ClientPreDrawMethod;
             return this;
         }
 
@@ -129,20 +134,25 @@ namespace IngameScript.ui_framework {
         * This should be called from the drawing loop. It establishes the order
         * of the operations.
         */
-        public virtual void Cycle(MyCanvas TargetCanvas) {
+        public virtual void Cycle(MyCanvas TargetCanvas, int iterationIndex) {
          // Compute position, frame index and other state-related properties
          // which might have to be computed even if the object is not visible
          // on screen
-            Compute(TargetCanvas);
+            Compute(TargetCanvas, iterationIndex);
 
          // Run the custom functionality (if any)
             if (ClientCycleMethod != null) {
-                ClientCycleMethod(this);
+                ClientCycleMethod(this, iterationIndex);
+            }
+
+         // Run the custom pre-draw method (if any)
+            if (ClientPreDrawMethod != null) {
+                ClientPreDrawMethod(TargetCanvas, iterationIndex);
             }
 
          // Cycle child objects (if any)
             foreach (MyOnScreenObject ChildObject in ChildObjects) {
-                ChildObject.Cycle(TargetCanvas);
+                ChildObject.Cycle(TargetCanvas, iterationIndex);
             }
 
          // Initialize the object, if it is not initialized.
@@ -158,11 +168,11 @@ namespace IngameScript.ui_framework {
             if (IsObjectVisible()) {
                 // Run the client draw method, if it's set
                 if (ClientDrawMethod != null) {
-                    ClientDrawMethod(TargetCanvas);
+                    ClientDrawMethod(TargetCanvas, iterationIndex);
                 }
 
                 // Call the object's draw method
-                Draw(TargetCanvas);
+                Draw(TargetCanvas, iterationIndex);
             }
         }
 
@@ -186,12 +196,12 @@ namespace IngameScript.ui_framework {
         * This method handles some drawing-related logic, such as computing
         * the position of certain sprites on the TargetScreen
         */
-        protected abstract void Compute(MyCanvas TargetCanvas);
+        protected abstract void Compute(MyCanvas TargetCanvas, int iterationIndex);
 
       /**
         * This method handles the drawing of the object onto the TargetScreen
         */
-        protected abstract void Draw(MyCanvas TargetCanvas);
+        protected abstract void Draw(MyCanvas TargetCanvas, int iterationIndex);
 
       /**
         * All on-screen objects must implement this method as this information

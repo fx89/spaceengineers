@@ -258,7 +258,7 @@ private class MyChaseLightController {
         }
 
      // Set the client cycle method to the chase light shape according to the referenced operating mode
-        ChaseLightShape.WithClientCycleMethod((MyOnScreenObject Obj) => {
+        ChaseLightShape.WithClientCycleMethod((MyOnScreenObject Obj, int currFrameIndex) => {
             // Center vertically (each frame might have a different height,
             // so this is required to run on every frame)
             Obj.y = (RES_Y - Obj.GetHeight()) / 2;
@@ -292,7 +292,7 @@ private class MyChaseLightController {
                 }
             }
 
-        return 1;});
+        });
 
     }
 

@@ -185,8 +185,8 @@ private class MyMatrixColumnSprite : MyStatefulAnimatedSprite {
 /**
  *  This drops the sprite at the configured speed
  */
-    protected override void Compute(MyCanvas TargetCanvas) {
-        base.Compute(TargetCanvas);
+    protected override void Compute(MyCanvas TargetCanvas, int currFrameIndex) {
+        base.Compute(TargetCanvas, currFrameIndex);
 
         stepIndex++;
         if (stepIndex == STEP_DURATION_FRAMES) {

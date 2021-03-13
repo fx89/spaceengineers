@@ -313,7 +313,7 @@ private abstract class MyTetrisPage : MyPage {
         );
     }
 
-    protected override void Draw(MyCanvas TargetCanvas) {
+    protected override void Draw(MyCanvas TargetCanvas, int currFrameIndex) {
         if (iterationIndex <= 3) {
             switch(iterationIndex) {
                 case 0:
@@ -335,11 +335,11 @@ private abstract class MyTetrisPage : MyPage {
             DrawGame(TargetCanvas);
         }
 
-        base.Draw(TargetCanvas);
+        base.Draw(TargetCanvas, currFrameIndex);
     }
 
-    protected override void Compute(MyCanvas TargetCanvas) {
-        base.Compute(TargetCanvas);
+    protected override void Compute(MyCanvas TargetCanvas, int currFrameIndex) {
+        base.Compute(TargetCanvas, currFrameIndex);
 
         if (keyPressFrameCounter > 0) {
             keyPressFrameCounter--;

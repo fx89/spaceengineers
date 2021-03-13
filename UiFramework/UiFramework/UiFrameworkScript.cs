@@ -64,6 +64,10 @@ private const int    RES_Y                 = 93;           // Depending on the f
 private const bool   MIRROR_X_AXIS         = false;        // If a transparent screen is placed the other way around, the image will have to be mirrored
 private const int    POST_SCREEN_DURATION  = 100;          // Set this to 0 to disable the POST screen. Its purpose is mainly to test that the set font size and resolution produce an image of the desired size
 
+// Set these numbers higher to handle higher resolution graphics at the expense of frame rate
+private const int N_COMPUTE_FRAMES = 1;
+private const int N_RENDER_FRAMES  = 1;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -134,7 +138,9 @@ private void InitApplication() {
     OnScreenApplication = UiFrameworkUtils.InitSingleScreenApplication(
         GridTerminalSystem, TARGET_BLOCK_NAME, SURFACE_INDEX, // The target panel
         RES_X, RES_Y,                                         // The target resolution
-        MIRROR_X_AXIS                                         // Rendering option
+        MIRROR_X_AXIS,                                        // Rendering option
+        N_COMPUTE_FRAMES,                                     // The number of compute iterations
+        N_RENDER_FRAMES                                       // The number of draw iterations
     )
         .WithDefaultPostPage((MyOnScreenApplication app) => {
          // The POST page should disappear after 100 frames

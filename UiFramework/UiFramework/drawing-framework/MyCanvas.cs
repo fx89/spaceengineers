@@ -69,9 +69,7 @@ namespace IngameScript.drawing_framework {
         * Fills the buffer with the given value (either on or off, caller's preference)
         */
         public void Clear(bool value = false) {
-            for (int x = 0; x < length; x++) {
-                Buffer[x] = value;
-            }
+            Buffer = Enumerable.Repeat(value, length).ToArray();
         }
 
       /**

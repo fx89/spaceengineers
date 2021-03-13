@@ -306,7 +306,7 @@ private void InitOtherStuff() {
             StockSprites.SPRITE_SMILE_SAD,
             StockSprites.SPRITE_SMILE_NEUTRAL
         }))
-        .WithClientCycleMethod((MyOnScreenObject Sprt) => {
+        .WithClientCycleMethod((MyOnScreenObject Sprt, int currFrame) => {
          // Apply the movement vector to the sprite
             Sprt.x += vecX;
             Sprt.y += vecY;
@@ -327,7 +327,7 @@ private void InitOtherStuff() {
                     OnScreenApplication.SwitchToPage(1);
                 }
             });
-        return 0;})
+        })
     );
 }
 
@@ -757,12 +757,11 @@ private void InitApplication() {
     MainPage.AddChild(OsdMenu);
 
  // Link the states of the lights to the actions of the OSD menu
-    MainPage.WithClientCycleMethod((MyOnScreenObject obj) => {
+    MainPage.WithClientCycleMethod((MyOnScreenObject obj, int currFrame) => {
         MonitorSwitch(CURSOR_DOWN_SWITCH_STATUS_BLOCK_NAME, () => { OsdMenu.CursorDown(); });
         MonitorSwitch(CURSOR_UP_SWITCH_STATUS_BLOCK_NAME  , () => { OsdMenu.CursorUp  (); });
         MonitorSwitch(CURSOR_IN_SWITCH_STATUS_BLOCK_NAME  , () => { OsdMenu.CursorIn  (); });
         MonitorSwitch(CURSOR_OUT_SWITCH_STATUS_BLOCK_NAME , () => { OsdMenu.CursorOut (); });
-        return 1;
     });
 
  // This is where other initialization, such as adding new pages, will happem

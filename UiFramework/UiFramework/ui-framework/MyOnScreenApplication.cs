@@ -12,7 +12,7 @@ namespace IngameScript.ui_framework {
     * required page and cycle the current page.
     */
     public class MyOnScreenApplication {
-        private List<MyScreen> TargetScreens = new List<MyScreen>();
+        private MyScreen TargetScreen;
         private List<MyPage> Pages = new List<MyPage>();
         private MyPage CurrentPage;
         private MyCanvas Canvas;
@@ -23,11 +23,16 @@ namespace IngameScript.ui_framework {
      // to be displayed on-screen involves more operations than the maximum
      // allowed within one single loop. To work, it must be split into
      // several iterations. Sadly, it also has to be split on multiple screens.
-        private int currIteration, nIterations;
+        private int currIteration;
+        private readonly int nIterations;
+        private readonly int nComputeIterations;
+        private readonly int nDrawIterations;
 
-        public MyOnScreenApplication() {
+        public MyOnScreenApplication(int nComputeIterations, int nDrawIterations) {
             currIteration = 0;
-            nIterations = 1;
+            this.nComputeIterations = nComputeIterations;
+            nIterations = nComputeIterations + nDrawIterations;
+            this.nDrawIterations = nDrawIterations;
         }
 
         public MyOnScreenApplication WithCanvas(MyCanvas Canvas) {
@@ -36,18 +41,12 @@ namespace IngameScript.ui_framework {
         }
 
         public MyOnScreenApplication OnScreen(MyScreen TargetScreen) {
-            return OnScreen(TargetScreen, 0, 0, Canvas.GetResX(), Canvas.GetResY());
-        }
-
-        public MyOnScreenApplication OnScreen(MyScreen TargetScreen, int clipRectX1, int clipRectY1, int clipRectX2, int clipRectY2) {
             if (Canvas == null) {
                 throw new InvalidOperationException("Invalid initialization of MyOnScreenApplication. Please call WithCanvas() before OnScreen().");
             }
 
             TargetScreen.WithCanvas(Canvas);
-            TargetScreen.WithClippedBuffer(clipRectX1, clipRectY1, clipRectX2, clipRectY2);
-            TargetScreens.Add(TargetScreen);
-            nIterations++;
+            this.TargetScreen = TargetScreen;
             return this;
         }
 
@@ -74,25 +73,26 @@ namespace IngameScript.ui_framework {
 
          // Create the POST page and give it the functionality of switching to the next page once
          // the initialization monitoring function returns true
-            MyPage POSTPage = (MyPage) new MyPage().WithClientCycleMethod((MyOnScreenObject obj) => {
-                if (initializationMonitoringFunction(this)) {
-                    SwitchToPage(1); // will do nothing if the page does not exist
-                }
-            return 0; });
+            MyPage POSTPage = (MyPage) new MyPage()
+                .WithInvertedColors()
+                .WithClientPreDrawMethod((MyCanvas TargetCanvas, int iterationIndex) => {
+                    TargetCanvas.Clear();
+                })
+                .WithClientCycleMethod((MyOnScreenObject obj, int iterationIndex) => {
+                    if (initializationMonitoringFunction(this)) {
+                        SwitchToPage(1); // will do nothing if the page does not exist
+                    }
+                });
 
          // Add the POST page to the application
             this.AddPage(POSTPage);
 
-         // Create the panel and add it to the POST page
-            MyPanel Panel = new MyPanel(0, 0, Canvas.GetResX(), Canvas.GetResY()).WithOptionalParameters(true, true, false);
-            POSTPage.AddChild(Panel);
-
          // Add another filled panel to the POST page, to serve as background for the INITIALIZING text
-            MyPanel TextBackgroundPanel = new MyPanel(0, 0, 2, 2).WithOptionalParameters(true, true, true);
+            MyPanel TextBackgroundPanel = new MyPanel(0, 0, 2, 2).WithOptionalParameters(true, true, false);
             POSTPage.AddChild(TextBackgroundPanel);
 
          // Add the INIIALIZING text label to the POST page
-            MyTextLabel TextLabel = new MyTextLabel("INITIALIZING", 1, 1).WithOptionalParameters(true, false, false);
+            MyTextLabel TextLabel = new MyTextLabel("INITIALIZING", 1, 1).WithOptionalParameters(true, true, true);
             POSTPage.AddChild(TextLabel);
 
          // Compute the location and dimensions of the text and that of its back panel based on
@@ -113,13 +113,13 @@ namespace IngameScript.ui_framework {
          // Add the moving square (a panel with some simple animation logic)
             POSTPage.AddChild(
                 new MyPanel(TextBackgroundPanel.x, TextBackgroundPanel.y + TextBackgroundPanel.GetHeight() + 2, 7, 4)
-                    .WithOptionalParameters(true, true, true)
-                    .WithClientCycleMethod((MyOnScreenObject obj) => {
+                    .WithOptionalParameters(true, true, false)
+                    .WithClientCycleMethod((MyOnScreenObject obj, int iterationIndex) => {
                         obj.x++;
                         if (obj.x > TextBackgroundPanel.x + TextBackgroundPanel.GetWidth() - 7) {
                             obj.x = TextBackgroundPanel.x;
                         }
-                    return 0; })
+                    })
             );
 
             return this;
@@ -177,14 +177,19 @@ namespace IngameScript.ui_framework {
 
         public void Cycle() {
             // Process the current iteration
-            if (currIteration == 0) {
+            if (currIteration < nComputeIterations) {
                 if (autoClearScreen) {
                     Canvas.Clear();
                 }
-                CurrentPage.Cycle(Canvas);
+                CurrentPage.Cycle(Canvas, currIteration);
             } else {
                 if (autoFlushBuffer) {
-                    TargetScreens[currIteration - 1].FlushBufferToScreen(CurrentPage.invertColors);
+                    TargetScreen
+                        .FlushBufferToScreen(
+                            CurrentPage.invertColors,
+                            currIteration - nComputeIterations, // Drawing comes after computing
+                            nDrawIterations
+                        );
                 }
             }
 
@@ -199,8 +204,8 @@ namespace IngameScript.ui_framework {
             return Canvas;
         }
 
-        public List<MyScreen> GetTargetScreens() {
-            return TargetScreens;
+        public MyScreen GetTargetScreen() {
+            return TargetScreen;
         }
     }
 }

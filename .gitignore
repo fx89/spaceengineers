@@ -369,3 +369,4 @@ MDK/
 Instructions.readme
 /UiFramework/UiFramework/*.projitems
 /UiFramework/UiFramework/*.shproj
+/UiFramework/*.editorconfig

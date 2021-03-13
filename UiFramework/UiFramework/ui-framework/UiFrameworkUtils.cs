@@ -14,9 +14,10 @@ namespace IngameScript.ui_framework {
 
         public static MyOnScreenApplication InitSingleScreenApplication(
             IMyGridTerminalSystem MyGridTerminalSystem, String textPanelName, int surfaceIndex,
-            int resX, int resY, bool mirrorX
+            int resX, int resY, bool mirrorX,
+            int nComputeIterations = 1, int nDrawIterations = 1
         ) {
-            return new MyOnScreenApplication()
+            return new MyOnScreenApplication(nComputeIterations, nDrawIterations)
                         .WithCanvas(
                             new MyCanvas(resX, resY)
                             )

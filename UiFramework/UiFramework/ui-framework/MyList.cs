@@ -208,11 +208,11 @@ namespace IngameScript.ui_framework {
             return SelectedItem;
         }
 
-        protected override void Compute(MyCanvas TargetCanvas) {
+        protected override void Compute(MyCanvas TargetCanvas, int currIteration) {
             // Nothing to do here
         }
 
-        protected override void Draw(MyCanvas TargetCanvas) {
+        protected override void Draw(MyCanvas TargetCanvas, int currIteration) {
             // Nothing to do here
         }
 

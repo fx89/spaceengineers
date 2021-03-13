@@ -264,11 +264,11 @@ namespace IngameScript {
             }
         }
 
-        protected override void Compute(MyCanvas TargetCanvas) {
+        protected override void Compute(MyCanvas TargetCanvas, int currFrame) {
             // Nothing to do here
         }
 
-        protected override void Draw(MyCanvas TargetCanvas) {
+        protected override void Draw(MyCanvas TargetCanvas, int currFrame) {
             // Nothing to do here
         }
 

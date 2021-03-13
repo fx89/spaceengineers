@@ -17,6 +17,9 @@ namespace IngameScript.drawing_framework {
         private MyCanvas Canvas;
         private bool mirrorX;
 
+     // The buffer where the actual content of the text surface is computed
+        private StringBuilder RenderedBuffer;
+
      // Properties which are also needed by FlushBufferToScreen()
         private char pixelValueOn, pixelValueOff;
 
@@ -36,10 +39,10 @@ namespace IngameScript.drawing_framework {
             return this;
         }
 
-      /**
-        * Turns on the buffer clipping option, which draws just part of the buffer
-        * on the screen. This helps in splitting the buffer onto multiple screens.
-        */
+     /**
+       * Turns on the buffer clipping option, which draws just part of the buffer
+       * on the screen. This helps in splitting the buffer onto multiple screens.
+       */
         public MyScreen WithClippedBuffer(int x1, int y1, int x2, int y2) {
             clipRectX1 = x1 > x2 ? x2 : x1;
             clipRectY1 = y1 > y2 ? y2 : y1;
@@ -119,45 +122,51 @@ namespace IngameScript.drawing_framework {
         }
 
       /**
-        * Converts the bool[] buffer of the canvas into a string of pixels which
-        * is then attributed to the Text property of the target LDC panel. It is
-        * a method used before in Space Engineers to simulate graphics modes on
-        * text panels. The font size must be made small enough that characters
-        * look like pixels. The best looking characters must be chosen.
+        * Converts the specified block of the bool[] buffer of the canvas into a
+        * string of pixels which is then copied over to the Text property of the
+        * target text surface. If this is the first block, the text is replaced.
+        * If this is not the first block, then the text is appended. This allows
+        * splitting the rendering into multiple steps and running each step into
+        * its own cycle, to allow drawing higher resolution images than the game
+        * allows in one single cycle.
         */
-        public void FlushBufferToScreen(bool invertColors) {
+        public void FlushBufferToScreen(bool invertColors, int currentBlock, int nBlocks) {
          // Get the buffer from the Canvas
             bool[] Buffer = isClipping ? ClipBuffer(Canvas.GetBuffer(), clipRectX1, clipRectY1, clipRectX2, clipRectY2, Canvas.GetResX(), Canvas.GetResY()) : Canvas.GetBuffer();
-            int length = Buffer.Count();
             int resX = isClipping ? clipRectX2 - clipRectX1 : Canvas.GetResX();
             int resY = isClipping ? clipRectY2 - clipRectY1 : Canvas.GetResY();
 
          // In case the screen needs to be mirrored on the X axis
             bool[] SourceBuffer = mirrorX ? MirrorBufferOnXAxis(Buffer, resX, resY) : Buffer;
 
-         // Create a new "rendered buffer" having the length of the screen buffer + once more the height to accommodate new line characters
-            StringBuilder renderedBuffer = new StringBuilder(length + resY + 1);
+         // Compute the range to output
+            int blockSize = (resY / nBlocks);
+            int lowY  = currentBlock * blockSize;
+            int highY = (currentBlock == nBlocks - 1) ? resY - 1 : lowY + blockSize;
+
+            int capacity = resY * resX + resY + 1;
+
+         // Clear the text from the target surface
+            if (currentBlock == 0) {
+                if (RenderedBuffer != null) {
+                    TargetSurface.WriteText(RenderedBuffer);
+                }
+
+                RenderedBuffer = new StringBuilder(capacity);
+                RenderedBuffer.EnsureCapacity(capacity);
+            }
 
          // Swap ON / OFF pixel values in case invertColors = true
             char pxValOn  = invertColors ? pixelValueOff : pixelValueOn;
             char pxValOff = invertColors ? pixelValueOn : pixelValueOff;
 
          // Fill the rendered buffer
-            int currXPos = 0;
-            for (int idx = 0; idx < length; idx++) {
-             // Append the pixel value to the rendered buffer
-                renderedBuffer.Append(SourceBuffer[idx] ? pxValOn : pxValOff);
-
-             // If the end of the line has been reached, append a new line and reset the counter
-                currXPos++;
-                if (currXPos == resX) {
-                    renderedBuffer.Append('\n');
-                    currXPos = 0;
+            for (int y = lowY ; y < highY ; y++) {
+                for (int x = 0 ; x < resX ; x++) {
+                    RenderedBuffer.Append(SourceBuffer[y * resX + x] ? pxValOn : pxValOff);
                 }
+                RenderedBuffer.Append('\n');
             }
-
-         // Apply the newly rendered buffer to the target LCD
-            TargetSurface.WriteText(renderedBuffer.ToString());
         }
 
         public MyCanvas GetCanvas() {

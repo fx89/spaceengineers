@@ -82,21 +82,38 @@ Development and partial building is done using MDK-SE: https://github.com/malwar
 
 
 
-// CONFIGURATION ///////////////////////////////////////////////////////////////////////////////////////////////////
+// COMMON PARAMETERS USED BY THE FRAMEWORK /////////////////////////////////////////////////////////////////////////
 
-// Name of the 1x1 LCD panel to which the view should draw
-private const string TARGET_LCD_PANEL_NAME = "3D_RENDERING_SCREEN_2";
+/* IMPORTANT NOTE:
+ * ==========================================================================================
+ * If the resolution is set too high, the script will crash with a "Script too Complex" error.
+ * A possible workaround would be to split the rendering across multiple iterations, but this
+ * would just affect the already low frame rate.
+ */
+private const string TARGET_BLOCK_NAME     = "Text Panel"; // The name of the LCD panel or control seat where the image will be rendered
+private const int    SURFACE_INDEX         = 0;            // Control seats and other similar blocks may have multiple display panels. The first one is 0, the second one is 1, and so on.
+private const float  PIXEL_SIZE            = 0.08056f;     // The font size to set for the target text surface
+private const int    RES_X                 = 325;          // Depending on the font size, more or less pixels will fit horizontally
+private const int    RES_Y                 = 215;          // Depending on the font size, ore or less pixels will fit vertically
+private const bool   MIRROR_X_AXIS         = false;        // If a transparent screen is placed the other way around, the image will have to be mirrored
+private const int    POST_SCREEN_DURATION  = 100;          // Set this to 0 to disable the POST screen. Its purpose is mainly to test that the set font size and resolution produce an image of the desired size
 
-// false = white foreground on black background
-// true  = black foreground on white background
+// Set these numbers higher to handle higher resolution graphics at the expense of frame rate
+private const int N_COMPUTE_FRAMES = 2; // The minimum for this is 2 (1 = rotating the mesh, 2 = drawing the mesh onto the backbuffer)
+private const int N_RENDER_FRAMES  = 2;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+// 3D RENDER CONFIGURATION /////////////////////////////////////////////////////////////////////////////////////////
+
+// Set this to true for black foreground on white background
 private static bool INVERT_COLORS = false;
-
-// For how many frames should the script display the "INITIALIZING" message on screen
-private const int POST_SCREEN_DURATION = 10;
 
 // Distance of the rendered object from the view
 //    --- increase this if you get the "Script too Complex" error while rendering - !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-private const double MODEL_DISTANCE_FROM_VIEW = 1.7d;
+private const double MODEL_DISTANCE_FROM_VIEW = 4.0d;
 
 // Set this to true to re-compute the object's center after loading
 private static bool RECENTER_OBJECT_AFTER_LOADING = true;
@@ -107,8 +124,8 @@ private const double ROT_SPEED_RAD_PITCH = 0.000d;
 private const double ROT_SPEED_RAD_ROLL  = 0.000d;
 
 // Initial rotation angles in radians
-private const double INITIAL_ROTATION_RAD_YAW   = 0.00d;
-private const double INITIAL_ROTATION_RAD_PITCH = Math.PI;
+private const double INITIAL_ROTATION_RAD_YAW   = Math.PI;
+private const double INITIAL_ROTATION_RAD_PITCH = 0.00d;
 private const double INITIAL_ROTATION_RAD_ROLL  = 0.00d;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -185,6 +202,9 @@ private void InitSprites5() {
     Obj3D.Rotate(INITIAL_ROTATION_RAD_YAW, INITIAL_ROTATION_RAD_PITCH, INITIAL_ROTATION_RAD_ROLL);
 }
 
+private void InitSprites6(){}
+private void InitSprites7(){}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -200,8 +220,6 @@ private class My3DModelView : MyOnScreenObject {
     private const double SCALE_Y = 20d;
 
     private MySimple3DObject AttachedModel;
-
-    private int iterationNumber = 0;
 
     private MyScreen TargetScreen;
 
@@ -232,15 +250,15 @@ private class My3DModelView : MyOnScreenObject {
         return RES_X;
     }
 
-    protected override void Compute(MyCanvas TargetCanvas) {
+    protected override void Compute(MyCanvas TargetCanvas, int currIteration) {
         
     }
 
-    protected override void Draw(MyCanvas TargetCanvas) {
+    protected override void Draw(MyCanvas TargetCanvas, int currIteation) {
         if (AttachedModel != null) {
          // Splitting the operation across multiple iterations,
          // to avoid the "Script too Complex" error.
-            switch (iterationNumber) {
+            switch (currIteation) {
              // The first iteration rotates the object
              // The canvas is also cleared at this point, but it is not yet
              // flushed to the target screen, to avoid flickering
@@ -256,20 +274,8 @@ private class My3DModelView : MyOnScreenObject {
                     }
                     break;
 
-             // The third operation flushes the buffer of the target canvas onto
-             // the target screen
-                case 2:
-                    TargetScreen.FlushBufferToScreen(invertScreenColors);
-                    break;
-
                 default:
                     break;
-            }
-
-         // Go to the next iteration number
-            iterationNumber++;
-            if (iterationNumber == 3) {
-                iterationNumber = 0;
             }
         }
     }
@@ -598,9 +604,6 @@ private class MySimpleWavefrontObjLoader {
 
 // APPLICATION INIT ////////////////////////////////////////////////////////////////////////////////////////////////
 
-// This is the resolution of the matrix on the target screen
-private const int RES_X = 139, RES_Y =  93;
-
 // This is the String array resulted from loading the Wavefront OBJ
 private String[] ObjFileLines;
 
@@ -608,46 +611,19 @@ private String[] ObjFileLines;
 private MySimple3DObject Obj3D;
 
 /**
- * This will be the interface to the application.
- */
-private MyOnScreenApplication OnScreenApplication;
-
-/**
  * This is the 3D model view which will rendered the 3D object onto
  * the target LCD panel. It is initialized in the InitSprites1() method.
  */
 private My3DModelView TheModelView;
 
-/**
- * Counter for the POST page
- */
-int currFrame = 0;
-
-/**
-  * This is called from the 5th loop
-  * It should be used for initializing the application.
-  *      > adding pages
-  *      > adding components to the pages
-  *      > linking logic and animations
-  */
-private void InitApplication() {
- // Set up the target screen
-    TerminalUtils.SetupTextSurfaceForMatrixDisplay(GridTerminalSystem, TARGET_LCD_PANEL_NAME, 0, 0.190f);
-
- // Initialized the application with the default POST page
-    OnScreenApplication = UiFrameworkUtils.InitSingleScreenApplication(GridTerminalSystem, TARGET_LCD_PANEL_NAME, 0, RES_X, RES_Y, false)
-        .WithDefaultPostPage((MyOnScreenApplication app) => {
-         // The POST page should disappear after 100 frames
-            currFrame++;
-            return currFrame >= POST_SCREEN_DURATION;
-        })
-        .WithoutAutomaticClear() // Don't clear the buffer automatically  - this will only make the 3D model blink
-        .WithoutAutomaticFlush() // Don't update the screen automatically - this will also make the 3D model blink
-        ;
-
+private void InitPages(MyOnScreenApplication OnScreenApplication) {
  // Initialize the main page and add it to the application
     MyPage MainPage = new MyPage();
     OnScreenApplication.AddPage(MainPage);
+
+ // Instruct the application to not clear the back buffer before rendering
+ // This will be done by this script, when it's time
+    OnScreenApplication.WithoutAutomaticClear();
 
  // Optionally invert the colors of the main page
     if (INVERT_COLORS) {
@@ -655,7 +631,7 @@ private void InitApplication() {
     }
 
  // Create the model view
-    TheModelView = new My3DModelView(OnScreenApplication.GetTargetScreens()[0], INVERT_COLORS)
+    TheModelView = new My3DModelView(OnScreenApplication.GetTargetScreen(), INVERT_COLORS)
         .WithRotationSpeeds(ROT_SPEED_RAD_YAW, ROT_SPEED_RAD_PITCH, ROT_SPEED_RAD_ROLL);
 
  // Attach the 3D object to the model view
@@ -666,12 +642,59 @@ private void InitApplication() {
     MainPage.AddChild(TheModelView);
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+// BOILERPLATING ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * This will be the interface to the application.
+ */
+private MyOnScreenApplication OnScreenApplication;
+
+int currFrame = 0;
+
+
+/**
+  * This is called from the 5th loop
+  * It should be used for initializing the application.
+  *      > adding pages
+  *      > adding components to the pages
+  *      > linking logic and animations
+  */
+private void InitApplication() {
+ // Set up the target screen
+    TerminalUtils.SetupTextSurfaceForMatrixDisplay(GridTerminalSystem, TARGET_BLOCK_NAME, SURFACE_INDEX, PIXEL_SIZE);
+ 
+    OnScreenApplication = UiFrameworkUtils.InitSingleScreenApplication(
+        GridTerminalSystem, TARGET_BLOCK_NAME, SURFACE_INDEX, // The target panel
+        RES_X, RES_Y,                                         // The target resolution
+        MIRROR_X_AXIS,                                        // Rendering option
+        N_COMPUTE_FRAMES,                                     // The number of compute iterations
+        N_RENDER_FRAMES                                       // The number of draw iterations
+    )
+        .WithDefaultPostPage((MyOnScreenApplication app) => {
+         // The POST page should disappear after 100 frames
+            currFrame++;
+            return currFrame >= POST_SCREEN_DURATION;
+        });
+
+    // Add more pages
+       InitPages(OnScreenApplication);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
 // MAIN ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * This is here mainly so that it can be used to write stuff to the console
+ * from other classes which would otherwise have no access to this functionality.
+ */
 public static MyGridProgram PROGRAM;
 
 public Program() {
@@ -686,26 +709,31 @@ public void Save() {
     // There is no state to be saved
 }
 
+/**
+ * To avoid the "Script too Complex" error, the initialization
+ * must be split across multiple iterations
+ */
 private int initStepNbr = 0;
 
 public void Main(string argument, UpdateType updateSource) {
- // Initialize the script. Do it in many steps, to avoid "script too complex" errors
+ // Initialize the script. Do it in steps, to avoid "script too complex" errors
  // caused by loading too many pictures in one single frame.
-    if (initStepNbr < 6) {
+    if (initStepNbr < 8) {
         initStepNbr++;
         if (initStepNbr == 1) InitSprites1();
         if (initStepNbr == 2) InitSprites2();
         if (initStepNbr == 3) InitSprites3();
         if (initStepNbr == 4) InitSprites4();
         if (initStepNbr == 5) InitSprites5();
-        if (initStepNbr == 6) InitApplication();
+        if (initStepNbr == 6) InitSprites6();
+        if (initStepNbr == 7) InitSprites7();
+        if (initStepNbr == 8) InitApplication();
     } else {
         OnScreenApplication.Cycle();
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 
 

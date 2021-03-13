@@ -1,42 +1,45 @@
 /* README //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-This script displays a rotating wireframe mesh on a 1x1 LCD panel, on a resolution of 139x93 pixels. The mesh
-is specified in the Wavefront OBJ format, which can be exported to by almost every graphics software. Information
-regarding the Wavefront OBJ format can be found here:
+This script displays a rotating 3D wireframe mesh on a 1x1 LCD panel, on a resolution of 325x215 pixels.
+The mesh is specified in the custom data field of the programmable block using the Wavefront OBJ format,
+which can be exported to by almost every graphics software. Due to script complexity limitations imposed
+by the game, the maximum number of lines (lines of text) accepted is 700. To reduce the number of lines,
+users can remove any line which doesn't represent a vertex (starting with "v ") or a face (starting with
+"f "). Vertex texture coordinates (starting with "vt") and nromals (starting with "vn") can be removed
+as well.
+
+To get better results on other types of screens, the display resolution and pixel size can be updated in
+the configuration included as part of the script. The initial angle and rotation speed, as well as the
+distance of the object from the view can also be updated there.
+
+==========================================================================================================
+IMPORTANT NOTE:
+==========================================================================================================
+In case the script freezes due to a "Script too Complex" error, try modifying the MODEL_DISTANCE_FROM_VIEW
+parameter, to move the object farther away.
+==========================================================================================================
+
+
+
+There are two configuration sections:
+
+    - COMMON PARAMETERS USED BY THE FRAMEWORK
+            > setup the target text surface (lcd, control station, etc)
+            > setup the resolution and pixel size
+            > setup the POST screen duration (0 to go straight to the rendering of the mesh)
+
+    - 3D RENDER CONFIGURATION
+            > switch the background and foreground colors
+            > move the object closer or farther from the view (too close will result in a "Script too Complex" error)
+            > set the initial angle and rotation speeds
+
+
+
+Information regarding the Wavefront OBJ format can be found here:
     https://en.wikipedia.org/wiki/Wavefront_.obj_file
 
-
-
-Updating the WAVEFRONT OBJ LOADING section:
-====================================================================================================================
-To load the mesh, simply export it as a Wavefront OBJ, open the file using a text editor and update the
-WAVEFRONT OBJ LOADING section, which can be found below, with the content of the file. To avoid errors caused
-by the complexity limitations imposed by the game, please make sure that only the vertices (lines starting with
-the letter v) and faces (lines starting with the letter f) are copied into the WAVEFRONT OBJ LOADING section.
-
-The maximum allowed number of lines is 700.
-====================================================================================================================
-====================================================================================================================
-====================================================================================================================
-
-
-
-Updating the CONFIGURATION section:
-====================================================================================================================
-The CONFIGURATION section allows setting the rotation speed on each axis, as well as the initial orientation of
-the object on screen. Please pay special attention to the MODEL_DISTANCE_FROM_VIEW property. If the model is too
-close, it will force the script to draw lines outside the screen. This will result in a "Script too Complex"
-error and the script will freeze. If this happens, then increase the distance until the script becomes stable.
-====================================================================================================================
-====================================================================================================================
-====================================================================================================================
-
-
-
-This is a showcase of the UI Framework, which enables low resolution graphics on text panels by dumping the frame
-buffer into a string, which is then set as the text property of a given text panel, which is set up to use the
-Monospace font and very small font size. The UI framework is minified in this script. The development version can be
-found here: https://github.com/fx89/spaceengineers/tree/main/UiFramework/UiFramework
+The project's development version, as well as a few test meshes, can be found here:
+    https://github.com/fx89/spaceengineers/tree/main/UiFramework/RotatingObjects
 
 For a working example, please visit the following workshop item:
     https://steamcommunity.com/sharedfiles/filedetails/?id=2415572447
@@ -69,7 +72,7 @@ private const int    POST_SCREEN_DURATION  = 100;          // Set this to 0 to d
 // 3D RENDER CONFIGURATION /////////////////////////////////////////////////////////////////////////////////////////
 
 // Set this to true for black foreground on white background
-private static bool INVERT_COLORS = false;
+private static bool INVERT_COLORS = true;
 
 // Distance of the rendered object from the view
 //    --- increase this if you get the "Script too Complex" error while rendering - !!!!!!!!!!!!!!!!!!!!!!!!!!!!!

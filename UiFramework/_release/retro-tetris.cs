@@ -35,9 +35,9 @@ Development and partial building is done using MDK-SE: https://github.com/malwar
  */
 private const string TARGET_BLOCK_NAME     = "TETRIS_SEAT"; // The name of the LCD panel or control seat where the image will be rendered
 private const int    SURFACE_INDEX         = 0;             // Control seats and other similar blocks may have multiple display panels. The first one is 0, the second one is 1, and so on.
-private const float  PIXEL_SIZE            = 0.118f;        // The font size to set for the target LCD panel
-private const int    RES_X                 = 230;           // Depending on the font size, more or less pixels will fit horizontally
-private const int    RES_Y                 =  90;           // Depending on the font size, ore or less pixels will fit vertically
+private const float  PIXEL_SIZE            = 0.115f;        // The font size to set for the target LCD panel
+private const int    RES_X                 = 235;           // Depending on the font size, more or less pixels will fit horizontally
+private const int    RES_Y                 = 100;           // Depending on the font size, ore or less pixels will fit vertically
 private const bool   MIRROR_X_AXIS         = false;         // If a transparent screen is placed the other way around, the image will have to be mirrored
 private const int    POST_SCREEN_DURATION  = 200;           // Set this to 0 to disable the POST screen. Its purpose is mainly to test that the set font size and resolution produce an image of the desired size
 
@@ -46,25 +46,6 @@ private const int    POST_SCREEN_DURATION  = 200;           // Set this to 0 to 
 // Set to true for white foreground and black background
 // Set to false for black foreground and white background
 private static bool INVERT_COLORS = true;
-
-// These are the names of the blocks which will act as switches for the game buttons.
-// They can be anything that can be turned on or off. They can be mapped to the toolbar,
-// so that they can be activated using the keyboard. The script monitors the states
-// of these switches and, if any of them is active, it executes the assigned action and
-// then turns the switch off.
-private const string SWITCH_LEFT_NAME  = "TETRIS GAME SWITCH LEFT";
-private const string SWITCH_UP_NAME    = "TETRIS GAME SWITCH UP";
-private const string SWITCH_RIGHT_NAME = "TETRIS GAME SWITCH RIGHT";
-private const string SWITCH_DOWN_NAME  = "TETRIS GAME SWITCH DOWN";
-
-// By default, a switch is considered on if its state is on and is considered off if
-// its state is off. If the switch is a thruster, or some other block that should be
-// kept online at all times, it would be preferrable that the script considers that
-// the switch has been pressed if the said thruster is turned off. The toolbar would
-// switch the thruster off to signal a key press. The script would then turn the
-// thruster back on after a very brief period of time. To achieve this behavior, set
-// this parameter to true.
-private static bool SWITCH_ACTIVE_STATE_IS_OFF = true;
 
 // This will be the game speed (0 to 20)
 private const int GAME_SPEED = 8;
@@ -184,17 +165,11 @@ private void InitPages(MyOnScreenApplication OnScreenApplication) {
 	OnScreenApplication.AddPage(HighScorePage);
 	OnScreenApplication.AddPage(NameEntryPage);
 
- // Get the switches
-	IMyFunctionalBlock Switch1 = TerminalUtils.FindFirstBlockWithName<IMyFunctionalBlock>(GridTerminalSystem, SWITCH_LEFT_NAME);
-	IMyFunctionalBlock Switch2 = TerminalUtils.FindFirstBlockWithName<IMyFunctionalBlock>(GridTerminalSystem, SWITCH_UP_NAME);
-	IMyFunctionalBlock Switch3 = TerminalUtils.FindFirstBlockWithName<IMyFunctionalBlock>(GridTerminalSystem, SWITCH_RIGHT_NAME);
-	IMyFunctionalBlock Switch4 = TerminalUtils.FindFirstBlockWithName<IMyFunctionalBlock>(GridTerminalSystem, SWITCH_DOWN_NAME);
-
  // Link the switches to the game pages
-	SplashPage.WithSwitches(Switch1, Switch2, Switch3, Switch4);
-	GamePage.WithSwitches(Switch1, Switch2, Switch3, Switch4);
-	HighScorePage.WithSwitches(Switch1, Switch2, Switch3, Switch4);
-	NameEntryPage.WithSwitches(Switch1, Switch2, Switch3, Switch4);
+	SplashPage.WithSwitches   (SwitchLeft, SwitchUp, SwitchRight, SwitchDown);
+	GamePage.WithSwitches	 (SwitchLeft, SwitchUp, SwitchRight, SwitchDown);
+	HighScorePage.WithSwitches(SwitchLeft, SwitchUp, SwitchRight, SwitchDown);
+	NameEntryPage.WithSwitches(SwitchLeft, SwitchUp, SwitchRight, SwitchDown);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -219,6 +194,10 @@ private const int KEY_DOWN = 3;
 
 // TETRIS GAME CLASSES /////////////////////////////////////////////////////////////////////////////////////////////
 
+private class MyKeyboardSwitch {
+	public bool Enabled;
+}
+
 private abstract class MyTetrisPage : MyPage {
  // Helps identify the first iteration, where the background image is being drawn separately
 	private int iterationIndex = 0;
@@ -227,7 +206,7 @@ private abstract class MyTetrisPage : MyPage {
 	protected MyOnScreenApplication OnScreenApplication;
 
  // Switches
-	protected IMyFunctionalBlock SwitchLeft, SwitchUp, SwitchRight, SwitchDown;
+	protected MyKeyboardSwitch SwitchLeft, SwitchUp, SwitchRight, SwitchDown;
 
 	private int ignoreKeyPressFramesCount = 0;
 	public int keyPressFrameCounter = 0;
@@ -237,10 +216,10 @@ private abstract class MyTetrisPage : MyPage {
 	}
 
 	public MyTetrisPage WithSwitches(
-		IMyFunctionalBlock SwitchLeft,
-		IMyFunctionalBlock SwitchUp,
-		IMyFunctionalBlock SwitchRight,
-		IMyFunctionalBlock SwitchDown
+		MyKeyboardSwitch SwitchLeft,
+		MyKeyboardSwitch SwitchUp,
+		MyKeyboardSwitch SwitchRight,
+		MyKeyboardSwitch SwitchDown
 	) {
 		this.SwitchLeft  = SwitchLeft;
 		this.SwitchUp	= SwitchUp;
@@ -328,11 +307,11 @@ private abstract class MyTetrisPage : MyPage {
 		}
 	}
 
-	private bool MonitorSwitch(IMyFunctionalBlock Switch) {
-		bool ret = SWITCH_ACTIVE_STATE_IS_OFF ? !Switch.Enabled : Switch.Enabled;
+	private bool MonitorSwitch(MyKeyboardSwitch Switch) {
+		bool ret = Switch.Enabled;
 
 		if (ret) {
-			Switch.Enabled = SWITCH_ACTIVE_STATE_IS_OFF;
+			Switch.Enabled = false;
 		}
 
 		return ret;
@@ -1518,21 +1497,46 @@ public void Save() {
  */
 private int initStepNbr = 0;
 
+/**
+ * Switches
+ */
+private MyKeyboardSwitch
+	SwitchLeft  = new MyKeyboardSwitch(),
+	SwitchUp	= new MyKeyboardSwitch(),
+	SwitchRight = new MyKeyboardSwitch(),
+	SwitchDown  = new MyKeyboardSwitch();
+
 public void Main(string argument, UpdateType updateSource) {
- // Initialize the script. Do it in steps, to avoid "script too complex" errors
- // caused by loading too many pictures in one single frame.
-	if (initStepNbr < 8) {
-		initStepNbr++;
-		if (initStepNbr == 1) InitSprites1();
-		if (initStepNbr == 2) InitSprites2();
-		if (initStepNbr == 3) InitSprites3();
-		if (initStepNbr == 4) InitSprites4();
-		if (initStepNbr == 5) InitSprites5();
-		if (initStepNbr == 6) InitSprites6();
-		if (initStepNbr == 7) InitSprites7();
-		if (initStepNbr == 8) InitApplication();
-	} else {
-		OnScreenApplication.Cycle();
+	switch (argument) {
+		case "left":
+			SwitchLeft.Enabled = true;
+			break;
+		case "up":
+			SwitchUp.Enabled = true;
+			break;
+		case "right":
+			SwitchRight.Enabled = true;
+			break;
+		case "down":
+			SwitchDown.Enabled = true;
+			break;
+		default:
+		 // Initialize the script. Do it in steps, to avoid "script too complex" errors
+		 // caused by loading too many pictures in one single frame.
+			if (initStepNbr < 8) {
+				initStepNbr++;
+				if (initStepNbr == 1) InitSprites1();
+				if (initStepNbr == 2) InitSprites2();
+				if (initStepNbr == 3) InitSprites3();
+				if (initStepNbr == 4) InitSprites4();
+				if (initStepNbr == 5) InitSprites5();
+				if (initStepNbr == 6) InitSprites6();
+				if (initStepNbr == 7) InitSprites7();
+				if (initStepNbr == 8) InitApplication();
+			} else {
+				OnScreenApplication.Cycle();
+			}
+			break;
 	}
 }
 

@@ -36,8 +36,8 @@ Development and partial building is done using MDK-SE: https://github.com/malwar
 private const string TARGET_BLOCK_NAME     = "TETRIS_SEAT"; // The name of the LCD panel or control seat where the image will be rendered
 private const int    SURFACE_INDEX         = 0;             // Control seats and other similar blocks may have multiple display panels. The first one is 0, the second one is 1, and so on.
 private const float  PIXEL_SIZE            = 0.115f;        // The font size to set for the target LCD panel
-private const int    RES_X                 = 235;           // Depending on the font size, more or less pixels will fit horizontally
-private const int    RES_Y                 = 100;           // Depending on the font size, ore or less pixels will fit vertically
+private const int    RES_X                 = 230;           // Depending on the font size, more or less pixels will fit horizontally
+private const int    RES_Y                 =  90;           // Depending on the font size, ore or less pixels will fit vertically
 private const bool   MIRROR_X_AXIS         = false;         // If a transparent screen is placed the other way around, the image will have to be mirrored
 private const int    POST_SCREEN_DURATION  = 200;           // Set this to 0 to disable the POST screen. Its purpose is mainly to test that the set font size and resolution produce an image of the desired size
 

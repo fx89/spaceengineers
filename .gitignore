@@ -370,3 +370,11 @@ Instructions.readme
 /UiFramework/UiFramework/*.projitems
 /UiFramework/UiFramework/*.shproj
 /UiFramework/*.editorconfig
+
+# Spave Engineers decorative blocks environment
+_target/
+*.log
+Models/
+
+# Blender
+*.blend1

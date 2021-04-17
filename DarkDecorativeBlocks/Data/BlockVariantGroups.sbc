@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<BlockVariantGroups>
+
+		<BlockVariantGroup>
+			<Id Type="MyObjectBuilder_BlockVariantGroup" Subtype="DTL_DEC_9123801_TestBlocks" />
+			<DisplayName>Test Blocks</DisplayName>
+			<Blocks>
+				<Block Type="MyObjectBuilder_CubeBlock" Subtype="DTL_DEC_9123801_TestBlock_Large" />
+			</Blocks>
+		</BlockVariantGroup>
+
+		<BlockVariantGroup>
+			<Id Type="MyObjectBuilder_BlockVariantGroup" Subtype="DTL_DEC_9123801_BareMetalWalls" />
+			<DisplayName>Bare Metal Walls</DisplayName>
+			<Blocks>
+				<Block Type="MyObjectBuilder_CubeBlock" Subtype="DTL_DEC_9123801_WallBareMetal_Large" />
+				<Block Type="MyObjectBuilder_CubeBlock" Subtype="DTL_DEC_9123801_WallBareMetalNoDangerLine_Large" />
+				<Block Type="MyObjectBuilder_CubeBlock" Subtype="DTL_DEC_9123801_WallBareMetalNoCeilingLine_Large" />
+				<Block Type="MyObjectBuilder_CubeBlock" Subtype="DTL_DEC_9123801_WallBareMetalNoDangerLineNoCeilingLine_Large" />
+			</Blocks>
+		</BlockVariantGroup>
+
+		<BlockVariantGroup>
+			<Id Type="MyObjectBuilder_BlockVariantGroup" Subtype="DTL_DEC_9123801_BareMetalWallsWithLights" />
+			<DisplayName>Bare Metal Walls with Lights</DisplayName>
+			<Blocks>
+				<Block Type="MyObjectBuilder_CubeBlock" Subtype="DTL_DEC_9123801_WallBareMetalWithStatusLight_Large" />
+				<Block Type="MyObjectBuilder_CubeBlock" Subtype="DTL_DEC_9123801_WallBareMetalWithStatusLightNoDangerLine_Large" />
+				<Block Type="MyObjectBuilder_CubeBlock" Subtype="DTL_DEC_9123801_WallBareMetalWithStatusLightNoDangerLineNoCeilingLine_Large" />
+			</Blocks>
+		</BlockVariantGroup>
+
+	</BlockVariantGroups>
+</Definitions>

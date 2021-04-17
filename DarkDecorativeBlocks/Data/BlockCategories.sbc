@@ -1,0 +1,31 @@
+<?xml version="1.0"  encoding="utf-8"?>
+<Definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<CategoryClasses>
+		<Category xsi:type="MyObjectBuilder_GuiBlockCategoryDefinition">
+			<Id>
+				<TypeId>GuiBlockCategoryDefinition</TypeId>
+				<SubtypeId/>
+			</Id>
+			<Name>DTL_DEC_9123801_BlocksGroup</Name>
+
+			<DisplayName>Dark Deco Blocks 0127101283123091278923109</DisplayName>
+
+			<SearchBlocks>true</SearchBlocks>
+			<IsShipCategory>true</IsShipCategory>
+			<IsBlockCategory>true</IsBlockCategory>
+
+			<ItemIds>
+				<string>CubeBlock/DTL_DEC_9123801_TestBlock_Large</string>
+
+				<string>CubeBlock/DTL_DEC_9123801_WallBareMetal_Large</string>
+				<string>CubeBlock/DTL_DEC_9123801_WallBareMetalNoDangerLine_Large</string>
+				<string>CubeBlock/DTL_DEC_9123801_WallBareMetalNoCeilingLine_Large</string>
+				<string>CubeBlock/DTL_DEC_9123801_WallBareMetalNoDangerLineNoCeilingLine_Large</string>
+
+				<string>CubeBlock/DTL_DEC_9123801_WallBareMetalWithStatusLight_Large</string>
+				<string>CubeBlock/DTL_DEC_9123801_WallBareMetalWithStatusLightNoDangerLine_Large</string>
+				<string>CubeBlock/DTL_DEC_9123801_WallBareMetalWithStatusLightNoDangerLineNoCeilingLine_Large</string>
+			</ItemIds>
+		</Category>
+	</CategoryClasses>
+</Definitions>
